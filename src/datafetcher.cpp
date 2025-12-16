@@ -22,6 +22,13 @@ void DataFetcher::fetch(const FetchOptions &options)
         request.setRawHeader(it.key().toUtf8(), it.value().toUtf8());
     }
 
+    // make us appear like firefox
+    request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0");
+    // accept header for pngs and images
+    request.setRawHeader("Accept", "image/avif,image/webp,*/*");
+    // cache options like a brwoser would
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+
     if (options.method == "POST" || options.method == "PUT" || options.method == "PATCH")
     {
         manager->post(request, options.data.value_or(QByteArray()));
