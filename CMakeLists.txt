@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Network)
 
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #include_directories(${CMAKE_SOURCE_DIR}/src/formula)
@@ -30,7 +30,7 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCES}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Network)
 
 #qt_finalize_executable(${PROJECT_NAME})
 #add_executable(hello_world main.cpp)

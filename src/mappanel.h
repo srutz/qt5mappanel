@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QWidget>
 #include <QPoint>
+#include "tilecache.h"
 
 const int TILE_SIZE = 256;
 
@@ -19,8 +20,11 @@ class MapPanel : public QWidget
 
 private:
     TileServer tileServer;
+    TileCache tileCache;
     QPoint mapPosition = {0, 0};
     int zoom = 8;
+
+    void paintTile(QPainter &painter, int dx, int dy, int x, int y);
 
 public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
@@ -29,9 +33,6 @@ public:
 protected:
     // override paint
     void paintEvent(QPaintEvent *event) override;
-
-private:
-    void paintTile(QPainter &painter, int dx, int dy, int x, int y);
 };
 
 #endif // MAPPANEL_H

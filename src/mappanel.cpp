@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <cmath>
 #include "mappanel.h"
+#include "datafetcher.h"
 
 using namespace std;
 
@@ -56,15 +57,41 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
     bool drawImage = DRAW_IMAGES && tileInBounds;
     if (drawImage)
     {
-    }
-    if (DEBUG)
-    {
-        painter.setPen(Qt::gray);
-        painter.drawRect(dx, dy, TILE_SIZE, TILE_SIZE);
-        painter.setPen(Qt::black);
-        painter.fillRect(dx + 4, dy + 4, TILE_SIZE - 8, TILE_SIZE - 8, Qt::blue);
-        QString s = QString("T %1, %2%3").arg(x).arg(y).arg(!tileInBounds ? " #" : "");
-        painter.setPen(Qt::gray);
-        painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
+        auto tileHandle = tileCache.getTile(TileKey{x, y, zoom});
+        if (tileHandle.has_value())
+        {
+            auto image = tileHandle.value();
+            painter.drawImage(QRect(dx, dy, TILE_SIZE, TILE_SIZE), image);
+        }
+        else
+        {
+            // initiate fetch
+            auto format = tileServer.baseUrl + "/%1/%2/%3.png";
+            auto url = format.arg(zoom).arg(x).arg(y);
+            auto fetcher = new DataFetcher(this);
+            DataFetcher::FetchOptions options{.url = url};
+            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, fetcher](const QByteArray &document)
+                    {
+                        QImage image;
+                        image.loadFromData(document);
+                        tileCache.putTile(TileKey{x, y, zoom}, image);
+                        this->update();
+                        fetcher->deleteLater(); });
+            connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message)
+                    {
+                        qDebug() << "Error fetching tile:" << message;
+                        fetcher->deleteLater(); });
+            fetcher->fetch(options);
+        }
+        if (DEBUG)
+        {
+            painter.setPen(Qt::gray);
+            painter.drawRect(dx, dy, TILE_SIZE, TILE_SIZE);
+            painter.setPen(Qt::black);
+            painter.fillRect(dx + 4, dy + 4, TILE_SIZE - 8, TILE_SIZE - 8, Qt::blue);
+            QString s = QString("T %1, %2%3").arg(x).arg(y).arg(!tileInBounds ? " #" : "");
+            painter.setPen(Qt::gray);
+            painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
+        }
     }
 }
