@@ -57,23 +57,25 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
     bool drawImage = DRAW_IMAGES && tileInBounds;
     if (drawImage)
     {
-        auto tileHandle = tileCache.getTile(TileKey{x, y, zoom});
-        if (tileHandle.has_value())
+        auto cacheEntry = tileCache.getTile(TileKey{x, y, zoom});
+        if (cacheEntry.has_value() && cacheEntry->image.has_value())
         {
-            auto image = tileHandle.value();
+            auto image = cacheEntry->image.value();
             painter.drawImage(QRect(dx, dy, TILE_SIZE, TILE_SIZE), image);
         }
-        else
+        else if (!cacheEntry.has_value())
         {
+            // mark as loading
+            tileCache.putTile(TileKey{x, y, zoom}, std::nullopt);
             // initiate fetch
             auto format = tileServer.baseUrl + "/%1/%2/%3.png";
             auto url = format.arg(zoom).arg(x).arg(y);
             auto fetcher = new DataFetcher(this);
             DataFetcher::FetchOptions options{.url = url};
-            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, fetcher](const QByteArray &document)
+            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, fetcher](const QByteArray &data)
                     {
                         QImage image;
-                        image.loadFromData(document);
+                        image.loadFromData(data);
                         tileCache.putTile(TileKey{x, y, zoom}, image);
                         this->update();
                         fetcher->deleteLater(); });
@@ -88,7 +90,6 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             painter.setPen(Qt::gray);
             painter.drawRect(dx, dy, TILE_SIZE, TILE_SIZE);
             painter.setPen(Qt::black);
-            painter.fillRect(dx + 4, dy + 4, TILE_SIZE - 8, TILE_SIZE - 8, Qt::blue);
             QString s = QString("T %1, %2%3").arg(x).arg(y).arg(!tileInBounds ? " #" : "");
             painter.setPen(Qt::gray);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);

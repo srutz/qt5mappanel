@@ -23,7 +23,7 @@ struct TileKey
 
 struct CacheEntry
 {
-    QImage image;
+    optional<QImage> image;
     QDateTime timestamp;
 };
 inline uint qHash(const TileKey &key, uint seed = 0)
@@ -37,8 +37,8 @@ public:
     TileCache();
     ~TileCache();
 
-    optional<QImage> getTile(const TileKey &tileKey);
-    void putTile(const TileKey &tileKey, const QImage &image);
+    optional<CacheEntry> getTile(const TileKey &tileKey);
+    void putTile(const TileKey &tileKey, const optional<QImage> &image);
 
 private:
     QHash<TileKey, CacheEntry> cache;

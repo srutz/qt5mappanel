@@ -1,4 +1,5 @@
 
+#include <QDebug>
 #include "tilecache.h"
 
 TileCache::TileCache()
@@ -9,20 +10,26 @@ TileCache::~TileCache()
 {
 }
 
-optional<QImage> TileCache::getTile(const TileKey &tileKey)
+optional<CacheEntry> TileCache::getTile(const TileKey &tileKey)
 {
     if (cache.contains(tileKey))
     {
-        return cache.value(tileKey).image;
+        return cache.value(tileKey);
     }
     return std::nullopt;
 }
 
-void TileCache::putTile(const TileKey &tileKey, const QImage &image)
+void TileCache::putTile(const TileKey &tileKey, const optional<QImage> &image)
 {
     CacheEntry entry{.image = image, .timestamp = QDateTime::currentDateTime()};
+    auto oldSize = cache.size();
     cache.insert(tileKey, entry);
-    evictOldEntries();
+    auto newSize = cache.size();
+    if (newSize != oldSize)
+    {
+        qDebug() << "TileCache: inserted tile (" << tileKey.x << "," << tileKey.y << "," << tileKey.zoom << "), cache size:" << cache.size();
+        evictOldEntries();
+    }
 }
 
 void TileCache::evictOldEntries()

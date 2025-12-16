@@ -43,6 +43,6 @@ void DataFetcher::handleNetworkResponse(QNetworkReply *reply)
         return;
     }
     auto data = reply->readAll();
-    qDebug() << "got data" << data.size() << "bytes" << ": utf8=" << QString::fromUtf8(data);
+    // qDebug() << "got data" << data.size() << "bytes" << ": utf8=" << QString::fromUtf8(data);
     emit responseReceived(data);
 }
