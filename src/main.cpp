@@ -1,9 +1,18 @@
+#include "mainwindow.h"
 #include <QApplication>
 #include <QScreen>
-#include "mainwindow.h"
+#include <QStyleFactory>
 
 int main(int argc, char *argv[])
 {
+    // set Ui-theme
+    // List available styles
+    QStringList styles = QStyleFactory::keys();
+    qDebug() << "Available styles:" << styles;
+
+    // Apply a style
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
+
     QApplication a(argc, argv);
     MainWindow w;
     // center the window on the screen

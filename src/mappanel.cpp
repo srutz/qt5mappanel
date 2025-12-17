@@ -10,6 +10,7 @@ using namespace std;
 MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent), tileServer(server)
 {
     qDebug() << "MapPanel created with TileServer URL:" << tileServer.baseUrl;
+    this->setContentsMargins(0, 0, 0, 0);
 }
 
 MapPanel::~MapPanel() {}
@@ -75,7 +76,7 @@ void MapPanel::wheelEvent(QWheelEvent *event)
 void MapPanel::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    qDebug() << "Painting MapPanel with TileServer URL:" << tileServer.baseUrl;
+    // qDebug() << "Painting MapPanel with TileServer URL:" << tileServer.baseUrl;
     int width = this->width();
     int height = this->height();
     QPainter painter(this);

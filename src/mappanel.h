@@ -10,7 +10,7 @@
 
 struct TileServer {
     QString baseUrl;
-    int maxZoom = 16;
+    int maxZoom = 18;
 };
 
 class MapPanel : public QWidget
