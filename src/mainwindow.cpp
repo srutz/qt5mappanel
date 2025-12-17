@@ -1,28 +1,51 @@
 #include "mainwindow.h"
+#include "mappanel.h"
 #include "maputil.h"
+#include "util.h"
+#include <QFontDatabase>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QString>
 #include <QTimer>
 #include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    setStyleSheet("background-color: white;");
+    int fontId = QFontDatabase::addApplicationFont(":/common/resources/fonts/Lucide.ttf");
+    if (fontId != -1) {
+        QString iconFontFamily = QFontDatabase::applicationFontFamilies(fontId).first();
+        qDebug() << "Icon font loaded:" << iconFontFamily;
+    } else {
+        qWarning("Failed to load icon font.");
+        exit(1);
+    }
 
     auto centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
     auto layout = new QHBoxLayout(centralWidget);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     centralWidget->setLayout(layout);
 
     auto leftPanel = new QWidget(centralWidget);
-    leftPanel->setFixedWidth(48);
-    leftPanel->setStyleSheet("background-color: #ffffff; border-right: 1px solid #cccccc;");
+    leftPanel->setFixedWidth(36);
+    leftPanel->setStyleSheet("background-color: #ffffff; border-right: 1px solid #e7e7e7;");
     layout->addWidget(leftPanel);
+
+    auto leftLayout = new QVBoxLayout(leftPanel);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+    leftLayout->setSpacing(0);
+    leftPanel->setLayout(leftLayout);
+
+    auto menuButton = new QPushButton(leftPanel);
+    menuButton->setFlat(true);
+    Util::setLucideIcon(menuButton, QString::fromUtf8("\uea3a"));
+    leftLayout->addWidget(menuButton);
+    leftLayout->addStretch();
 
     auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
     mapPanel->setZoom(13);

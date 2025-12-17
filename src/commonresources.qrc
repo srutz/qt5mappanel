@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/common">
+        <file>resources/fonts/Lucide.ttf</file>
+    </qresource>
+</RCC>
