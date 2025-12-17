@@ -1,28 +1,23 @@
 #ifndef TILECACHE_H
 #define TILECACHE_H
 
-#include <QString>
-#include <QHash>
 #include <QDateTime>
+#include <QHash>
 #include <QImage>
+#include <QString>
 #include <optional>
 
 using std::optional;
 
-struct TileKey
-{
+struct TileKey {
     int x;
     int y;
     int zoom;
 
-    bool operator==(const TileKey &other) const
-    {
-        return x == other.x && y == other.y && zoom == other.zoom;
-    }
+    bool operator==(const TileKey &other) const { return x == other.x && y == other.y && zoom == other.zoom; }
 };
 
-struct CacheEntry
-{
+struct CacheEntry {
     optional<QImage> image;
     QDateTime timestamp;
 };
@@ -33,14 +28,14 @@ inline uint qHash(const TileKey &key, uint seed = 0)
 
 class TileCache
 {
-public:
+  public:
     TileCache();
     ~TileCache();
 
     optional<CacheEntry> getTile(const TileKey &tileKey);
     void putTile(const TileKey &tileKey, const optional<QImage> &image);
 
-private:
+  private:
     QHash<TileKey, CacheEntry> cache;
     void evictOldEntries();
 };

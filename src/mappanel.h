@@ -1,13 +1,12 @@
 #ifndef MAPPANEL_H
 #define MAPPANEL_H
 
+#include "constants.h"
 #include "tilecache.h"
 #include <QDebug>
 #include <QPoint>
 #include <QString>
 #include <QWidget>
-
-const int TILE_SIZE = 256;
 
 struct TileServer {
     QString baseUrl;
@@ -29,11 +28,17 @@ class MapPanel : public QWidget
   public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
     ~MapPanel();
+    QPoint getMapPosition() const;
+    void setMapPosition(QPoint p);
+    void setMapPositionCentered(QPoint p);
+
     int getZoom() const;
     void setZoom(int zoom);
+    void zoomInOut(QPoint pivot, int delta);
 
   protected:
     void paintEvent(QPaintEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
   signals:
     void zoomChanged(int oldZoom, int zoom);

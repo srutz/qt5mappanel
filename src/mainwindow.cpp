@@ -1,14 +1,14 @@
 #include "mainwindow.h"
-#include <QLabel>
+#include "maputil.h"
 #include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QTimer>
+#include <QLabel>
 #include <QMainWindow>
-#include <QResizeEvent>
 #include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QVBoxLayout>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setStyleSheet("background-color: white;");
 
@@ -18,14 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget->setLayout(layout);
 
     auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"});
+    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.51, -0.11, mapPanel->getZoom()));
     layout->addWidget(mapPanel);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event)
-{
-    QMainWindow::resizeEvent(event);
-}
+void MainWindow::resizeEvent(QResizeEvent *event) { QMainWindow::resizeEvent(event); }
 
-MainWindow::~MainWindow()
-{
-}
+MainWindow::~MainWindow() {}

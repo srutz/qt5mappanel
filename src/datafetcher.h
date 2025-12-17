@@ -1,10 +1,10 @@
 #ifndef DATAFETCHER_H
 #define DATAFETCHER_H
 
-#include <QObject>
+#include <QByteArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QByteArray>
+#include <QObject>
 
 /*
  * Generic Data Fetcher for loading web resources
@@ -14,10 +14,9 @@ class DataFetcher : public QObject
 {
     Q_OBJECT
 
-public:
+  public:
     /* options for the fetch */
-    struct FetchOptions
-    {
+    struct FetchOptions {
         QString url;
         QString method = "GET"; // GET, POST, PUT, DELETE
         QMap<QString, QString> headers;
@@ -27,14 +26,14 @@ public:
     explicit DataFetcher(QObject *parent = nullptr);
     void fetch(const FetchOptions &options);
 
-signals:
+  signals:
     void responseReceived(const QByteArray &document);
     void error(const QString &message);
 
-private slots:
+  private slots:
     void handleNetworkResponse(QNetworkReply *reply);
 
-private:
+  private:
     QNetworkAccessManager *manager;
 };
 

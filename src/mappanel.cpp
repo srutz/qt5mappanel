@@ -2,6 +2,7 @@
 #include "mappanel.h"
 #include "datafetcher.h"
 #include <QPainter>
+#include <QWheelEvent>
 #include <cmath>
 
 using namespace std;
@@ -12,6 +13,17 @@ MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent),
 }
 
 MapPanel::~MapPanel() {}
+
+QPoint MapPanel::getMapPosition() const { return mapPosition; }
+
+void MapPanel::setMapPosition(QPoint p) { mapPosition = p; }
+
+void MapPanel::setMapPositionCentered(QPoint p)
+{
+    int w = this->width();
+    int h = this->height();
+    setMapPosition(QPoint(p.x() - w / 2, p.y() - h / 2));
+}
 
 int MapPanel::getZoom() const { return zoom; }
 
@@ -25,7 +37,40 @@ void MapPanel::setZoom(int zoom)
     emit zoomChanged(oldZoom, this->zoom);
 }
 
-// see  https://sourceforge.net/p/mappanel/code/HEAD/tree/com.roots.map/src/com/roots/map/MapPanel.java#l585
+void MapPanel::zoomInOut(QPoint pivot, int delta)
+{
+    if (delta == 0) {
+        return;
+    }
+    QPoint p = getMapPosition();
+    int dx = pivot.x();
+    int dy = pivot.y();
+    int newZoom = zoom + (delta > 0 ? 1 : -1);
+    if (newZoom < 1 || newZoom > tileServer.maxZoom) {
+        return;
+    }
+    setZoom(newZoom);
+    if (delta > 0) {
+        setMapPosition(QPoint(p.x() * 2 + dx, p.y() * 2 + dy));
+    } else if (delta < 0) {
+        setMapPosition(QPoint((p.x() - dx) / 2, (p.y() - dy) / 2));
+    }
+    update();
+}
+
+void MapPanel::wheelEvent(QWheelEvent *event)
+{
+    QPoint p = event->position().toPoint();
+    int delta = event->angleDelta().y();
+    if (delta > 0) {
+        zoomInOut(p, 1);
+    } else if (delta < 0) {
+        zoomInOut(p, -1);
+    }
+    event->accept();
+}
+// see
+// https://sourceforge.net/p/mappanel/code/HEAD/tree/com.roots.map/src/com/roots/map/MapPanel.java#l585
 
 void MapPanel::paintEvent(QPaintEvent *event)
 {
@@ -75,14 +120,13 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             auto url = format.arg(zoom).arg(x).arg(y);
             auto fetcher = new DataFetcher(this);
             DataFetcher::FetchOptions options{.url = url};
-            connect(fetcher, &DataFetcher::responseReceived, this,
-                    [this, x, y, fetcher](const QByteArray &data) {
-                        QImage image;
-                        image.loadFromData(data);
-                        tileCache.putTile(TileKey{x, y, zoom}, image);
-                        this->update();
-                        fetcher->deleteLater();
-                    });
+            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, fetcher](const QByteArray &data) {
+                QImage image;
+                image.loadFromData(data);
+                tileCache.putTile(TileKey{x, y, zoom}, image);
+                this->update();
+                fetcher->deleteLater();
+            });
             connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
                 qDebug() << "Error fetching tile:" << message;
                 fetcher->deleteLater();
