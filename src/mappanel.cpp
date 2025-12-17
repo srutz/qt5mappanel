@@ -24,6 +24,7 @@ void MapPanel::setMapPositionCentered(QPoint p)
     int w = this->width();
     int h = this->height();
     setMapPosition(QPoint(p.x() - w / 2, p.y() - h / 2));
+    update();
 }
 
 int MapPanel::zoom() const { return m_zoom; }
@@ -70,6 +71,13 @@ void MapPanel::wheelEvent(QWheelEvent *event)
     }
     event->accept();
 }
+
+void MapPanel::mousePressEvent(QMouseEvent *event) { setMapPositionCentered(event->pos() + mapPosition()); }
+
+void MapPanel::mouseMoveEvent(QMouseEvent *event) {}
+void MapPanel::mouseReleaseEvent(QMouseEvent *event) {}
+void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) {};
+
 // see
 // https://sourceforge.net/p/mappanel/code/HEAD/tree/com.roots.map/src/com/roots/map/MapPanel.java#l585
 
