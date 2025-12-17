@@ -1,5 +1,6 @@
 
 #include "sidebar.h"
+#include "mappanel.h"
 #include "util.h"
 #include <QPushButton>
 #include <QTimer>
@@ -49,10 +50,13 @@ void SideBar::setupSheet()
     actionsLayout->setContentsMargins(0, 0, 0, 0);
     actionsLayout->setSpacing(8);
 
-    auto settingsButton = new QPushButton("Settings", this);
+    auto settingsButton = new QPushButton("Toggle Debug", this);
     Util::applyButtonStyle(settingsButton);
     connect(settingsButton, &QPushButton::clicked, this, [this]() {
-        QTimer::singleShot(50, this, [this]() {});
+        auto parentMapPanel = this->parentWidget()->findChild<MapPanel *>();
+        if (parentMapPanel) {
+            parentMapPanel->setDebug(!parentMapPanel->debug());
+        }
         m_sheet->hideSheet();
     });
     actionsLayout->addWidget(settingsButton);
@@ -70,7 +74,7 @@ void SideBar::setupSheet()
     auto header = new QLabel(this);
     header->setText(R"(<html>
         <h3>Qt5 based Tile-Viewer</h3>
-        <p>Written by Stepan Rutz</p>
+        <p>stepan.rutz@stepanrutz.com</p>
         )");
     header->setWordWrap(true);
 

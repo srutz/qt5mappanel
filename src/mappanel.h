@@ -7,6 +7,9 @@
 #include <QPoint>
 #include <QString>
 #include <QWidget>
+#include <optional>
+
+using std::optional;
 
 struct TileServer {
     QString baseUrl;
@@ -22,12 +25,15 @@ class MapPanel : public QWidget
     TileCache m_tileCache;
     QPoint m_mapPosition = {0, 0};
     int m_zoom = 8;
+    bool m_Debug = false;
+    optional<QPoint> m_downCoords;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
 
   public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
     ~MapPanel();
+
     const QPoint &mapPosition() const;
     void setMapPosition(QPoint p);
     void setMapPositionCentered(QPoint p);
@@ -35,6 +41,9 @@ class MapPanel : public QWidget
     int zoom() const;
     void setZoom(int zoom);
     void zoomInOut(QPoint pivot, int delta);
+
+    bool debug() const;
+    void setDebug(bool debug);
 
   protected:
     void paintEvent(QPaintEvent *event) override;

@@ -11,6 +11,10 @@ MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent),
 {
     qDebug() << "MapPanel created with TileServer URL:" << m_tileServer.baseUrl;
     this->setContentsMargins(0, 0, 0, 0);
+
+    // Enable double buffering to reduce flicker
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setAttribute(Qt::WA_NoSystemBackground);
 }
 
 MapPanel::~MapPanel() {}
@@ -24,7 +28,6 @@ void MapPanel::setMapPositionCentered(QPoint p)
     int w = this->width();
     int h = this->height();
     setMapPosition(QPoint(p.x() - w / 2, p.y() - h / 2));
-    update();
 }
 
 int MapPanel::zoom() const { return m_zoom; }
@@ -60,6 +63,14 @@ void MapPanel::zoomInOut(QPoint pivot, int delta)
     update();
 }
 
+bool MapPanel::debug() const { return m_Debug; }
+
+void MapPanel::setDebug(bool debug)
+{
+    m_Debug = debug;
+    update();
+}
+
 void MapPanel::wheelEvent(QWheelEvent *event)
 {
     QPoint p = event->position().toPoint();
@@ -72,10 +83,29 @@ void MapPanel::wheelEvent(QWheelEvent *event)
     event->accept();
 }
 
-void MapPanel::mousePressEvent(QMouseEvent *event) { setMapPositionCentered(event->pos() + mapPosition()); }
+void MapPanel::mousePressEvent(QMouseEvent *event)
+{
+    // setMapPositionCentered(event->pos() + mapPosition());
+    m_downCoords = event->pos();
+    setCursor(Qt::ClosedHandCursor);
+}
 
-void MapPanel::mouseMoveEvent(QMouseEvent *event) {}
-void MapPanel::mouseReleaseEvent(QMouseEvent *event) {}
+void MapPanel::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_downCoords.has_value()) {
+        QPoint delta = event->pos() - m_downCoords.value();
+        setMapPosition(m_mapPosition - delta);
+        m_downCoords = event->pos();
+        update();
+    }
+}
+
+void MapPanel::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_downCoords.reset();
+    setCursor(Qt::ArrowCursor);
+}
+
 void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) {};
 
 // see
@@ -108,7 +138,6 @@ void MapPanel::paintEvent(QPaintEvent *event)
 
 void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
 {
-    bool DEBUG = !false;
     bool DRAW_IMAGES = true;
     bool DRAW_OUT_OF_BOUNDS = false;
 
@@ -142,12 +171,15 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             });
             fetcher->fetch(options);
         }
-        if (DEBUG) {
+        if (m_Debug) {
             painter.setPen(Qt::gray);
             painter.drawRect(dx, dy, TILE_SIZE, TILE_SIZE);
-            painter.setPen(Qt::black);
+
+            // draw transparent overlay
+            painter.fillRect(dx + 4, dy, TILE_SIZE - 8, 24, QColor(0, 0, 0, 140));
+
             QString s = QString("T %1, %2%3").arg(x).arg(y).arg(!tileInBounds ? " #" : "");
-            painter.setPen(Qt::gray);
+            painter.setPen(Qt::white);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
         }
     }
