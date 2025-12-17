@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->addWidget(sideBar);
 
     auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
-    mapPanel->setZoom(13);
+    mapPanel->setZoom(6);
     mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
     layout->addWidget(mapPanel);
 }

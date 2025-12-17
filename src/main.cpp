@@ -15,8 +15,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     MainWindow w;
-    // center the window on the screen
-    w.resize(800, 600);
+    w.resize(1000, 600);
     w.setWindowTitle("Qt Mappanel");
     auto screen = QGuiApplication::primaryScreen();
     auto screenGeometry = screen->geometry();
