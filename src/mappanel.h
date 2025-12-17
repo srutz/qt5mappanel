@@ -1,24 +1,24 @@
 #ifndef MAPPANEL_H
 #define MAPPANEL_H
 
-#include <QString>
-#include <QDebug>
-#include <QWidget>
-#include <QPoint>
 #include "tilecache.h"
+#include <QDebug>
+#include <QPoint>
+#include <QString>
+#include <QWidget>
 
 const int TILE_SIZE = 256;
 
-struct TileServer
-{
+struct TileServer {
     QString baseUrl;
+    int maxZoom = 16;
 };
 
 class MapPanel : public QWidget
 {
     Q_OBJECT
 
-private:
+  private:
     TileServer tileServer;
     TileCache tileCache;
     QPoint mapPosition = {0, 0};
@@ -26,13 +26,17 @@ private:
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
 
-public:
+  public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
     ~MapPanel();
+    int getZoom() const;
+    void setZoom(int zoom);
 
-protected:
-    // override paint
+  protected:
     void paintEvent(QPaintEvent *event) override;
+
+  signals:
+    void zoomChanged(int oldZoom, int zoom);
 };
 
 #endif // MAPPANEL_H
