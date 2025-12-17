@@ -15,13 +15,14 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    int fontId = QFontDatabase::addApplicationFont(":/common/resources/fonts/Lucide.ttf");
-    if (fontId != -1) {
-        QString iconFontFamily = QFontDatabase::applicationFontFamilies(fontId).first();
-        qDebug() << "Icon font loaded:" << iconFontFamily;
-    } else {
-        qWarning("Failed to load icon font.");
-        exit(1);
+    for (const auto &family : {":/common/resources/fonts/Lucide.ttf", ":/common/resources/fonts/Roboto-Regular.ttf"}) {
+        int fontId = QFontDatabase::addApplicationFont(family);
+        if (fontId != -1) {
+            qDebug() << "Icon font loaded:" << family << fontId;
+        } else {
+            qWarning() << "Failed to load font:" << family;
+            exit(1);
+        }
     }
 
     auto centralWidget = new QWidget(this);

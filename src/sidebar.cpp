@@ -2,6 +2,7 @@
 #include "sidebar.h"
 #include "mappanel.h"
 #include "util.h"
+#include <QFont>
 #include <QPushButton>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -10,6 +11,10 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
 {
     setFixedWidth(36);
     setStyleSheet("background-color: #ffffff; border-right: 1px solid #e7e7e7;");
+
+    // Set Roboto-Regular font for this widget
+    QFont robotoFont("Roboto");
+    setFont(robotoFont);
 
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
