@@ -36,7 +36,7 @@ class TileCache
     void putTile(const TileKey &tileKey, const optional<QImage> &image);
 
   private:
-    QHash<TileKey, CacheEntry> cache;
+    QHash<TileKey, CacheEntry> m_cache;
     void evictOldEntries();
 };
 

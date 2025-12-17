@@ -1,20 +1,15 @@
 #include "sheet.h"
-#include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QPalette>
-#include <QTimer>
-#include <QResizeEvent>
-#include <QPushButton>
 #include <QIcon>
-#include <QShortcut>
 #include <QKeySequence>
+#include <QPalette>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QShortcut>
+#include <QTimer>
+#include <QVBoxLayout>
 
-
-
-
-Sheet::Sheet(QWidget *content, QWidget *parent)
-    : QWidget(parent),
-    m_content(content) 
+Sheet::Sheet(QWidget *content, QWidget *parent) : QWidget(parent), m_content(content)
 {
     m_destination = nullptr;
     m_backdrop = new SheetAnimatedWidget(this);
@@ -25,13 +20,7 @@ Sheet::Sheet(QWidget *content, QWidget *parent)
     }
     m_backdrop->setBackgroundColor(QColor::fromRgbF(0, 0, 0, 0.0));
     m_backdrop->hide();
-
-    // Set sidepanel to white background
-    //auto sidepanelPalette = m_sidepanel->palette();
-    //sidepanelPalette.setColor(QPalette::Window, Qt::white);
-    //m_sidepanel->setAutoFillBackground(true);
-    //m_sidepanel->setPalette(sidepanelPalette);
-    m_sidepanel->setStyleSheet("QWidget { background-color: #ff00000; }");
+    m_sidepanel->setStyleSheet("QWidget { background-color: #ffffff; }");
 
     auto contentLayout = new QVBoxLayout(m_sidepanel);
     contentLayout->setContentsMargins(QMargins(0, 0, 0, 0));
@@ -45,14 +34,12 @@ Sheet::Sheet(QWidget *content, QWidget *parent)
     buttonBarLayout->addStretch();
     buttonBarLayout->setContentsMargins(0, 2, 0, 1);
     auto closeButton = new QPushButton(this);
-    connect(closeButton, &QPushButton::clicked, this, [this] {
-        this->hideSheet(true);
-    });
+    connect(closeButton, &QPushButton::clicked, this, [this] { this->hideSheet(true); });
     closeButton->setFlat(true);
     closeButton->setIcon(QIcon::fromTheme("window-close-symbolic"));
     buttonBarLayout->addWidget(closeButton);
 
-    QShortcut* shortcut = new QShortcut(QKeySequence("Escape"), this);
+    QShortcut *shortcut = new QShortcut(QKeySequence("Escape"), this);
     connect(shortcut, &QShortcut::activated, this, [this] {
         if (m_backdrop->isVisible()) {
             hideSheet(true);
@@ -60,10 +47,10 @@ Sheet::Sheet(QWidget *content, QWidget *parent)
     });
 }
 
-Sheet::~Sheet() {
-}
+Sheet::~Sheet() {}
 
-void Sheet::showSheet(QWidget *destination, Side side) {
+void Sheet::showSheet(QWidget *destination, Side side)
+{
     if (!destination) {
         hideSheet(false);
         return;
@@ -75,7 +62,7 @@ void Sheet::showSheet(QWidget *destination, Side side) {
         child->setParent(nullptr);
     }
     m_buttonBar->setParent(m_sidepanel);
-    auto contentLayout = dynamic_cast<QVBoxLayout*>(m_sidepanel->layout());
+    auto contentLayout = dynamic_cast<QVBoxLayout *>(m_sidepanel->layout());
     contentLayout->addWidget(m_buttonBar, 0);
     if (m_content) {
         m_content->setParent(m_sidepanel);
@@ -93,10 +80,8 @@ void Sheet::showSheet(QWidget *destination, Side side) {
     m_sidepanel->show();
 
     m_buttonBar->setVisible(m_showTopRightCloseButton);
-    connect(destination, &QWidget::destroyed, [this] {
-        hideSheet(false);
-    });
-    QTimer::singleShot(0, [this]() { 
+    connect(destination, &QWidget::destroyed, [this] { hideSheet(false); });
+    QTimer::singleShot(0, [this]() {
         layout(false);
         m_sidepanel->setPosition(QPoint(m_side == Side::Left ? -m_width : m_backdrop->width(), 0));
         layout(true);
@@ -105,7 +90,8 @@ void Sheet::showSheet(QWidget *destination, Side side) {
     });
 }
 
-void Sheet::hideSheet(bool animated) {
+void Sheet::hideSheet(bool animated)
+{
     m_destination = nullptr;
     if (animated) {
         m_sidepanel->setPositionA(QPoint(m_side == Side::Left ? -m_width : m_backdrop->width(), 0), m_hideDurationMs, [this] {
@@ -121,7 +107,8 @@ void Sheet::hideSheet(bool animated) {
     }
 }
 
-void Sheet::layout(bool animated) {
+void Sheet::layout(bool animated)
+{
     if (m_destination) {
         // resize the backdrop to full size of the destination widget
         m_backdrop->resize(m_destination->size());
