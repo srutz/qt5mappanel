@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "mappanel.h"
 #include "maputil.h"
+#include "sidebar.h"
 #include "util.h"
 #include <QFontDatabase>
 #include <QHBoxLayout>
@@ -31,25 +32,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->setSpacing(0);
     centralWidget->setLayout(layout);
 
-    auto leftPanel = new QWidget(centralWidget);
-    leftPanel->setFixedWidth(36);
-    leftPanel->setStyleSheet("background-color: #ffffff; border-right: 1px solid #e7e7e7;");
-    layout->addWidget(leftPanel);
-
-    auto leftLayout = new QVBoxLayout(leftPanel);
-    leftLayout->setContentsMargins(0, 0, 0, 0);
-    leftLayout->setSpacing(0);
-    leftPanel->setLayout(leftLayout);
-
-    auto menuButton = new QPushButton(leftPanel);
-    menuButton->setFlat(true);
-    Util::setLucideIcon(menuButton, QString::fromUtf8("\uea3a"));
-    leftLayout->addWidget(menuButton);
-    leftLayout->addStretch();
+    auto sideBar = new SideBar(centralWidget);
+    layout->addWidget(sideBar);
 
     auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
     mapPanel->setZoom(13);
-    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->getZoom()));
+    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
     layout->addWidget(mapPanel);
 }
 

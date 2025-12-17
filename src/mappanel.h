@@ -18,21 +18,21 @@ class MapPanel : public QWidget
     Q_OBJECT
 
   private:
-    TileServer tileServer;
-    TileCache tileCache;
-    QPoint mapPosition = {0, 0};
-    int zoom = 8;
+    TileServer m_tileServer;
+    TileCache m_tileCache;
+    QPoint m_mapPosition = {0, 0};
+    int m_zoom = 8;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
 
   public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
     ~MapPanel();
-    QPoint getMapPosition() const;
+    const QPoint &mapPosition() const;
     void setMapPosition(QPoint p);
     void setMapPositionCentered(QPoint p);
 
-    int getZoom() const;
+    int zoom() const;
     void setZoom(int zoom);
     void zoomInOut(QPoint pivot, int delta);
 
