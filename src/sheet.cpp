@@ -45,6 +45,10 @@ Sheet::Sheet(QWidget *content, QWidget *parent) : QWidget(parent), m_content(con
             hideSheet(true);
         }
     });
+    connect(m_backdrop, &SheetAnimatedWidget::mouseClicked, this, [this](QMouseEvent *event) {
+        Q_UNUSED(event);
+        hideSheet(true);
+    });
 }
 
 Sheet::~Sheet() {}

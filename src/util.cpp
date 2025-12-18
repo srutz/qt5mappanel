@@ -66,3 +66,16 @@ void Util::applyFlatButtonStyle(QPushButton *button)
                           //"    box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.5);"
                           "}");
 }
+
+void Util::applyButtonHover(QPushButton *button)
+{
+    button->setStyleSheet("QPushButton {"
+                          "    border: none;"
+                          "}"
+                          "QPushButton:hover {"
+                          "    background-color: #f5f5f5;"
+                          "}"
+                          "QPushButton:pressed {"
+                          "    background-color: #e5e5e5;"
+                          "}");
+}

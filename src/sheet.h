@@ -1,10 +1,9 @@
 #ifndef SHEET_H
 #define SHEET_H
 
-#include <QWidget>
+#include <QKeyEvent>
 #include <QPropertyAnimation>
 #include <QWidget>
-#include <QKeyEvent>
 #include <functional>
 
 class SheetAnimatedWidget;
@@ -16,18 +15,14 @@ class Sheet : public QWidget
 {
     Q_OBJECT
 
-public:
-    enum Side
-    {
-        Left,
-        Right
-    };
+  public:
+    enum Side { Left, Right };
 
-    int m_width = 400;  // width in pixels
-    int m_showDurationMs = 250; // default show duration in milliseconds
-    int m_hideDurationMs = 250; // default hide duration in milliseconds
-    bool m_showTopRightCloseButton = true; // 
-    
+    int m_width = 400;                     // width in pixels
+    int m_showDurationMs = 250;            // default show duration in milliseconds
+    int m_hideDurationMs = 250;            // default hide duration in milliseconds
+    bool m_showTopRightCloseButton = true; //
+
     Side m_side = Right;
     QWidget *m_content = nullptr;
     QWidget *m_destination;
@@ -35,7 +30,7 @@ public:
     SheetAnimatedWidget *m_sidepanel;
     QWidget *m_buttonBar;
 
-public:
+  public:
     Sheet(QWidget *content, QWidget *parent = nullptr);
     ~Sheet();
 
@@ -60,13 +55,14 @@ public:
 class SheetAnimatedWidget : public QWidget
 {
     Q_OBJECT
-public:
+  public:
     Q_PROPERTY(QPoint position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
 
-    explicit SheetAnimatedWidget(QWidget *parent = nullptr) : QWidget(parent) {
+    explicit SheetAnimatedWidget(QWidget *parent = nullptr) : QWidget(parent)
+    {
         this->installEventFilter(this);
-        for(QObject* child : children()) {
+        for (QObject *child : children()) {
             child->installEventFilter(this);
         }
     }
@@ -119,10 +115,7 @@ public:
         setPalette(backdropPalette);
     }
 
-    void setBackgroundColorA(
-        const QColor color, 
-        int durationMs = 200, 
-        std::function<void()> onFinished = nullptr)
+    void setBackgroundColorA(const QColor color, int durationMs = 200, std::function<void()> onFinished = nullptr)
     {
         if (backgroundColorAnimation) {
             backgroundColorAnimation->stop();
@@ -138,19 +131,26 @@ public:
         connect(anim, &QPropertyAnimation::valueChanged, this, [this, anim] {
             auto v = anim->currentValue();
             // get the color from the animation
-            applyBackgroundColor(v.value<QColor>()); 
+            applyBackgroundColor(v.value<QColor>());
         });
         if (onFinished != nullptr) {
             anim->connect(anim, &QPropertyAnimation::finished, this, [=]() { onFinished(); });
         }
     }
 
+  protected:
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        QWidget::mousePressEvent(event);
+        emit mouseClicked(event);
+    }
 
-signals:
+  signals:
     void positionChanged(const QPoint point);
     void backgroundColorChanged(const QColor color);
+    void mouseClicked(QMouseEvent *event);
 
-private:
+  private:
     QPoint m_position = QPoint(0, 0);
     QColor m_backgroundColor = QColor(Qt::white);
     QPropertyAnimation *positionAnimation = nullptr;

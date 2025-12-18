@@ -3,6 +3,7 @@
 #include "mappanel.h"
 #include "util.h"
 #include <QFont>
+#include <QPalette>
 #include <QPushButton>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -10,11 +11,11 @@
 SideBar::SideBar(QWidget *parent) : QWidget(parent)
 {
     setFixedWidth(36);
-    setStyleSheet("background-color: #ffffff; border-right: 1px solid #e7e7e7;");
+    setAutoFillBackground(true);
 
-    // Set Roboto-Regular font for this widget
-    QFont robotoFont("Roboto");
-    setFont(robotoFont);
+    // QPalette pal = palette();
+    // pal.setColor(QPalette::Window, Qt::white);
+    // setPalette(pal);
 
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -28,11 +29,14 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
     layout->addStretch();
 
     setupSheet();
-
     connect(menuButton, &QPushButton::clicked, this, [this]() {
         auto centralWidget = this->parentWidget();
         this->m_sheet->showSheet(centralWidget, Sheet::Side::Left);
     });
+
+    // setStyleSheet("background-color: #ffff00; border-right: 1px solid #808080;");
+    // setStyleSheet("background-color: #ff0000;");
+    // setStyleSheet("border-right: 4px solid #808080;");
 }
 
 SideBar::~SideBar() {}
@@ -46,7 +50,7 @@ void SideBar::setupSheet()
 {
     // setup the sheet's content
     m_sheetContent = new QWidget(this);
-    m_sheetContent->setStyleSheet("background-color: #ffffff;");
+    m_sheetContent->setStyleSheet("background-color: #ffffff; font-family: 'Roboto';");
     auto sheetLayout = new QVBoxLayout(m_sheetContent);
     sheetLayout->setContentsMargins(9, 0, 13, 0);
 
