@@ -42,6 +42,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->addWidget(mapPanel);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event) { QMainWindow::resizeEvent(event); }
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    auto sheet = findChild<Sheet *>();
+    if (sheet) {
+        sheet->layout(false);
+    }
+}
 
 MainWindow::~MainWindow() {}
