@@ -9,6 +9,8 @@
 
 using std::optional;
 
+const int MAX_TILE_CACHE_ENTRIES = 1000;
+
 struct TileKey {
     int x;
     int y;
@@ -23,7 +25,7 @@ struct CacheEntry {
 };
 inline uint qHash(const TileKey &key, uint seed = 0)
 {
-    return qHash(QString("%1_%2_%3").arg(key.x).arg(key.y).arg(key.zoom), seed);
+    return qHash(key.x, seed) ^ (qHash(key.y, seed) << 1) ^ (qHash(key.zoom, seed) << 2);
 }
 
 class TileCache
@@ -34,6 +36,8 @@ class TileCache
 
     optional<CacheEntry> getTile(const TileKey &tileKey);
     void putTile(const TileKey &tileKey, const optional<QImage> &image);
+    void dump();
+    int size() const { return m_cache.size(); }
 
   private:
     QHash<TileKey, CacheEntry> m_cache;

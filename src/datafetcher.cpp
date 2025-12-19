@@ -2,15 +2,18 @@
 
 #include "raiiguard.h"
 
-DataFetcher::DataFetcher(QObject *parent) : QObject(parent), manager(new QNetworkAccessManager(this))
+DataFetcher::DataFetcher(const QString &m_info, QObject *parent)
+    : QObject(parent), m_info(m_info), manager(new QNetworkAccessManager(this))
 {
     connect(manager, &QNetworkAccessManager::finished, this, &DataFetcher::handleNetworkResponse);
 }
 
+DataFetcher::~DataFetcher() {}
+
 void DataFetcher::fetch(const FetchOptions &options)
 {
     QUrl url(options.url);
-    qDebug() << "Fetching URL:" << url.toString();
+    // qDebug() << "fetch" << url.toString();
     if (!url.isValid()) {
         emit error("Invalid URL");
         return;
@@ -40,18 +43,22 @@ void DataFetcher::fetch(const FetchOptions &options)
 
 void DataFetcher::handleNetworkResponse(QNetworkReply *reply)
 {
+    m_completed = true;
     /* make sure reply is deleted under all circumstances */
     RAIIGuard guard([reply] { reply->deleteLater(); });
     if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "Network error for URL:" << reply->url().toString() << "Error code:" << reply->error()
+                 << "Error message:" << reply->errorString();
         emit error(reply->errorString());
         return;
     }
     auto data = reply->readAll();
+    /*
     qDebug() << "response:"
              << "url" << reply->url().toString() << "http-status"
              << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << "content-type"
              << reply->header(QNetworkRequest::ContentTypeHeader).toString() << "content-length"
              << reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() << "size" << data.size() << "bytes";
-    // QString::fromUtf8(data);
+    */
     emit responseReceived(data);
 }

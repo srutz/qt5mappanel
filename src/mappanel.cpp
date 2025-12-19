@@ -69,7 +69,12 @@ void MapPanel::setDebug(bool debug)
 {
     m_Debug = debug;
     update();
+    if (m_Debug) {
+        m_tileCache.dump();
+    }
 }
+
+int MapPanel::tileCacheSize() const { return m_tileCache.size(); }
 
 void MapPanel::wheelEvent(QWheelEvent *event)
 {
@@ -143,27 +148,35 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
     int xTileCount = 1 << m_zoom;
     int yTileCount = 1 << m_zoom;
     bool tileInBounds = x >= 0 && x < xTileCount && y >= 0 && y < yTileCount;
-    bool drawImage = tileInBounds;
-    if (drawImage) {
-        auto cacheEntry = m_tileCache.getTile(TileKey{x, y, m_zoom});
+    // qDebug() << "paintTile: zoom=" << m_zoom << "x=" << x << "y=" << y << "inBounds=" << tileInBounds;
+    if (tileInBounds) {
+        auto zoom = m_zoom;
+        auto cacheEntry = m_tileCache.getTile(TileKey{x, y, zoom});
         if (cacheEntry.has_value() && cacheEntry->image.has_value()) {
             auto image = cacheEntry->image.value();
             painter.drawImage(QRect(dx, dy, TILE_SIZE, TILE_SIZE), image);
         } else if (!cacheEntry.has_value()) {
             // mark as loading
-            m_tileCache.putTile(TileKey{x, y, m_zoom}, std::nullopt);
+            auto oldTileCacheSize = m_tileCache.size();
+            m_tileCache.putTile(TileKey{x, y, zoom}, std::nullopt);
+            auto newTileCacheSize = m_tileCache.size();
+            if (newTileCacheSize != oldTileCacheSize) {
+                emit tileCacheSizeChanged(newTileCacheSize);
+            }
+
             // initiate fetch
             auto format = m_tileServer.baseUrl + "/%1/%2/%3.png";
-            auto url = format.arg(m_zoom).arg(x).arg(y);
-            auto fetcher = new DataFetcher(this);
+            auto url = format.arg(zoom).arg(x).arg(y);
+            auto fetcher = new DataFetcher(url, this);
             DataFetcher::FetchOptions options{.url = url};
-            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, fetcher](const QByteArray &data) {
+            connect(fetcher, &DataFetcher::responseReceived, this, [this, x, y, zoom, fetcher](const QByteArray &data) {
                 QImage image;
                 image.loadFromData(data);
-                m_tileCache.putTile(TileKey{x, y, m_zoom}, image);
+                m_tileCache.putTile(TileKey{x, y, zoom}, image);
                 this->update();
                 fetcher->deleteLater();
             });
+            // qDebug() << "initload: zoom=" << zoom << "x=" << x << "y=" << y;
             connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
                 qDebug() << "Error fetching tile:" << message;
                 fetcher->deleteLater();
@@ -177,7 +190,16 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             // draw transparent overlay
             painter.fillRect(dx + 4, dy, TILE_SIZE - 8, 24, QColor(0, 0, 0, 140));
 
-            QString s = QString("T %1, %2, %3").arg(x).arg(y).arg(m_zoom);
+            auto tileKey = TileKey{x, y, m_zoom};
+            auto cacheEntry = m_tileCache.getTile(tileKey);
+            QString s = QString("T zoom=%1, x=%2, y=%3").arg(m_zoom).arg(x).arg(y);
+            if (cacheEntry.has_value()) {
+                s += QString(", cached");
+                s += cacheEntry->image.has_value() ? ", image" : ", no image";
+                s += QString(", age=%1s").arg(cacheEntry->timestamp.secsTo(QDateTime::currentDateTime()));
+            } else {
+                s += QString(", not cached");
+            }
             painter.setPen(Qt::white);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
         }

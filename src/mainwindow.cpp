@@ -17,9 +17,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     for (const auto &family : {":/common/resources/fonts/Lucide.ttf", ":/common/resources/fonts/Roboto-Regular.ttf"}) {
         int fontId = QFontDatabase::addApplicationFont(family);
-        if (fontId != -1) {
-            qDebug() << "Icon font loaded:" << family << fontId;
-        } else {
+        if (fontId == -1) {
             qWarning() << "Failed to load font:" << family;
             exit(1);
         }
@@ -33,10 +31,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->setSpacing(0);
     centralWidget->setLayout(layout);
 
-    auto sideBar = new SideBar(centralWidget);
+    auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
+    auto sideBar = new SideBar(mapPanel, centralWidget);
     layout->addWidget(sideBar);
 
-    auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
     mapPanel->setZoom(6);
     mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
     layout->addWidget(mapPanel);

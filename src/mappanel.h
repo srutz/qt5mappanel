@@ -19,6 +19,8 @@ struct TileServer {
 class MapPanel : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(int zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
+    Q_PROPERTY(int tileCacheSize READ tileCacheSize NOTIFY tileCacheSizeChanged)
 
   private:
     TileServer m_tileServer;
@@ -45,6 +47,8 @@ class MapPanel : public QWidget
     bool debug() const;
     void setDebug(bool debug);
 
+    int tileCacheSize() const;
+
   protected:
     void paintEvent(QPaintEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
@@ -56,6 +60,7 @@ class MapPanel : public QWidget
 
   signals:
     void zoomChanged(int oldZoom, int zoom);
+    void tileCacheSizeChanged(int newSize);
 };
 
 #endif // MAPPANEL_H

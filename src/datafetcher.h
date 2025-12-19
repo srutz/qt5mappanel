@@ -23,7 +23,8 @@ class DataFetcher : public QObject
         std::optional<QByteArray> data; // POST / PUT / PATCH upload-data
     };
 
-    explicit DataFetcher(QObject *parent = nullptr);
+    explicit DataFetcher(const QString &m_info, QObject *parent = nullptr);
+    ~DataFetcher();
     void fetch(const FetchOptions &options);
 
   signals:
@@ -35,6 +36,8 @@ class DataFetcher : public QObject
 
   private:
     QNetworkAccessManager *manager;
+    QString m_info;
+    bool m_completed = false;
 };
 
 #endif // DATAFETCHER_H

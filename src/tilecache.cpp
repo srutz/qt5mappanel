@@ -21,17 +21,14 @@ void TileCache::putTile(const TileKey &tileKey, const optional<QImage> &image)
     m_cache.insert(tileKey, entry);
     auto newSize = m_cache.size();
     if (newSize != oldSize) {
-        // qDebug() << "TileCache: inserted tile (" << tileKey.x << "," << tileKey.y << "," << tileKey.zoom << "), cache size:" <<
-        // cache.size();
         evictOldEntries();
     }
 }
 
 void TileCache::evictOldEntries()
 {
-    const auto maxEntries = 1000;
     // Simple eviction policy: remove oldest entries until size is under maxEntries
-    while (m_cache.size() > maxEntries) {
+    while (m_cache.size() > MAX_TILE_CACHE_ENTRIES) {
         auto oldestKey = m_cache.begin().key();
         for (auto it = m_cache.begin(); it != m_cache.end(); ++it) {
             if (it.value().timestamp < m_cache.value(oldestKey).timestamp) {
@@ -39,5 +36,18 @@ void TileCache::evictOldEntries()
             }
         }
         m_cache.remove(oldestKey);
+    }
+}
+
+void TileCache::dump()
+{
+    qDebug() << "TileCache dump: size =" << m_cache.size();
+    for (auto it = m_cache.begin(); it != m_cache.end(); ++it) {
+        qDebug() << "TileKey: (" << it.key().x << "," << it.key().y << "," << it.key().zoom << ")"
+                 << "Timestamp:" << it.value().timestamp.toString() << "Has Image:" << it.value().image.has_value()
+                 << "Image Size:"
+                 << (it.value().image.has_value()
+                         ? QString("%1x%2").arg(it.value().image->width()).arg(it.value().image->height())
+                         : "N/A");
     }
 }

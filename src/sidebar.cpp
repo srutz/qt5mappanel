@@ -8,7 +8,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
-SideBar::SideBar(QWidget *parent) : QWidget(parent)
+SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPanel(mapPanel)
 {
     setFixedWidth(36);
     setAutoFillBackground(true);
@@ -21,12 +21,39 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
     auto menuButton = new QPushButton(this);
     menuButton->setFlat(true);
     menuButton->setStyleSheet(
-        "QPushButton { border: none; padding: 8px; margin: 2px; }"
+        "QPushButton { border: none; padding: 2px; margin: 2px; }"
         "QPushButton:hover { background-color: #f0f0f0; }"
         "QPushButton:pressed { background-color: #d0d0d0; }");
     Util::setLucideIcon(menuButton, QString::fromUtf8("\uea3a"));
+
+    auto zoomLabel = new QLabel("", this);
+    zoomLabel->setAlignment(Qt::AlignCenter);
+    zoomLabel->setWordWrap(true);
+    zoomLabel->setFont(QFont("Roboto", 7));
+    zoomLabel->setStyleSheet("color: #444444;");
+    layout->addWidget(zoomLabel);
+    connect(m_mapPanel, &MapPanel::zoomChanged, this, [zoomLabel](int oldZoom, int zoom) {
+        auto t = QString("Zoom %1").arg(zoom);
+        zoomLabel->setText(t);
+    });
+
+    auto tileCacheSizeLabel = new QLabel("", this);
+    tileCacheSizeLabel->setAlignment(Qt::AlignCenter);
+    tileCacheSizeLabel->setWordWrap(true);
+    tileCacheSizeLabel->setFont(QFont("Roboto", 7));
+    tileCacheSizeLabel->setStyleSheet("color: #444444;");
+    layout->addWidget(tileCacheSizeLabel);
+    connect(m_mapPanel, &MapPanel::tileCacheSizeChanged, this, [tileCacheSizeLabel](int newSize) {
+        auto t = QString("T-Cache\n%1\n of %2").arg(newSize).arg(MAX_TILE_CACHE_ENTRIES);
+        tileCacheSizeLabel->setText(t);
+    });
+
     layout->addWidget(menuButton);
     layout->addStretch();
+    layout->addWidget(tileCacheSizeLabel);
+    layout->addSpacing(8);
+    layout->addWidget(zoomLabel);
+    layout->addSpacing(8);
 
     setupSheet();
     connect(menuButton, &QPushButton::clicked, this, [this]() {
