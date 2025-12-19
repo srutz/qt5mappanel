@@ -138,13 +138,12 @@ void MapPanel::paintEvent(QPaintEvent *event)
 
 void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
 {
-    bool DRAW_IMAGES = true;
     bool DRAW_OUT_OF_BOUNDS = false;
 
     int xTileCount = 1 << m_zoom;
     int yTileCount = 1 << m_zoom;
     bool tileInBounds = x >= 0 && x < xTileCount && y >= 0 && y < yTileCount;
-    bool drawImage = DRAW_IMAGES && tileInBounds;
+    bool drawImage = tileInBounds;
     if (drawImage) {
         auto cacheEntry = m_tileCache.getTile(TileKey{x, y, m_zoom});
         if (cacheEntry.has_value() && cacheEntry->image.has_value()) {
@@ -178,7 +177,7 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             // draw transparent overlay
             painter.fillRect(dx + 4, dy, TILE_SIZE - 8, 24, QColor(0, 0, 0, 140));
 
-            QString s = QString("T %1, %2%3").arg(x).arg(y).arg(!tileInBounds ? " #" : "");
+            QString s = QString("T %1, %2, %3").arg(x).arg(y).arg(m_zoom);
             painter.setPen(Qt::white);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
         }

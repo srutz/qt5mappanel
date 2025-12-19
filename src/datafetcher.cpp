@@ -10,19 +10,20 @@ DataFetcher::DataFetcher(QObject *parent) : QObject(parent), manager(new QNetwor
 void DataFetcher::fetch(const FetchOptions &options)
 {
     QUrl url(options.url);
+    qDebug() << "Fetching URL:" << url.toString();
     if (!url.isValid()) {
         emit error("Invalid URL");
         return;
     }
     QNetworkRequest request(url);
-    qDebug() << "Fetching URL:" << url.toString();
     for (auto it = options.headers.constBegin(); it != options.headers.constEnd(); ++it) {
         request.setRawHeader(it.key().toUtf8(), it.value().toUtf8());
     }
 
     // make us appear like firefox
-    request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) "
-                                       "Gecko/20100101 Firefox/104.0");
+    request.setRawHeader(
+        "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) "
+                      "Gecko/20100101 Firefox/104.0");
     // accept header for pngs and images
     request.setRawHeader("Accept", "image/avif,image/webp,*/*");
     // cache options like a brwoser would
@@ -46,7 +47,11 @@ void DataFetcher::handleNetworkResponse(QNetworkReply *reply)
         return;
     }
     auto data = reply->readAll();
-    // qDebug() << "got data" << data.size() << "bytes" << ": utf8=" <<
+    qDebug() << "response:"
+             << "url" << reply->url().toString() << "http-status"
+             << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << "content-type"
+             << reply->header(QNetworkRequest::ContentTypeHeader).toString() << "content-length"
+             << reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() << "size" << data.size() << "bytes";
     // QString::fromUtf8(data);
     emit responseReceived(data);
 }

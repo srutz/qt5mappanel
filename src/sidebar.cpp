@@ -13,10 +13,6 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
     setFixedWidth(36);
     setAutoFillBackground(true);
 
-    // QPalette pal = palette();
-    // pal.setColor(QPalette::Window, Qt::white);
-    // setPalette(pal);
-
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
@@ -24,6 +20,10 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
 
     auto menuButton = new QPushButton(this);
     menuButton->setFlat(true);
+    menuButton->setStyleSheet(
+        "QPushButton { border: none; padding: 8px; margin: 2px; }"
+        "QPushButton:hover { background-color: #f0f0f0; }"
+        "QPushButton:pressed { background-color: #d0d0d0; }");
     Util::setLucideIcon(menuButton, QString::fromUtf8("\uea3a"));
     layout->addWidget(menuButton);
     layout->addStretch();
@@ -33,10 +33,6 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
         auto centralWidget = this->parentWidget();
         this->m_sheet->showSheet(centralWidget, Sheet::Side::Left);
     });
-
-    // setStyleSheet("background-color: #ffff00; border-right: 1px solid #808080;");
-    // setStyleSheet("background-color: #ff0000;");
-    // setStyleSheet("border-right: 4px solid #808080;");
 }
 
 SideBar::~SideBar() {}
