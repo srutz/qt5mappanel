@@ -36,6 +36,8 @@ class MapPanel : public QWidget
     MapPanel(const TileServer &server, QWidget *parent = nullptr);
     ~MapPanel();
 
+    const TileServer &tileServer() const;
+
     const QPoint &mapPosition() const;
     void setMapPosition(QPoint p);
     void setMapPositionCentered(QPoint p);

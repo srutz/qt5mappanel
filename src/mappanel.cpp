@@ -19,6 +19,8 @@ MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent),
 
 MapPanel::~MapPanel() {}
 
+const TileServer &MapPanel::tileServer() const { return m_tileServer; }
+
 const QPoint &MapPanel::mapPosition() const { return m_mapPosition; }
 
 void MapPanel::setMapPosition(QPoint p) { m_mapPosition = p; }

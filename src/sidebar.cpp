@@ -1,5 +1,6 @@
 
 #include "sidebar.h"
+#include "infoitem.h"
 #include "mappanel.h"
 #include "util.h"
 #include <QFont>
@@ -37,21 +38,8 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
         zoomLabel->setText(t);
     });
 
-    auto tileCacheSizeLabel = new QLabel("", this);
-    tileCacheSizeLabel->setAlignment(Qt::AlignCenter);
-    tileCacheSizeLabel->setWordWrap(true);
-    tileCacheSizeLabel->setFont(QFont("Roboto", 7));
-    tileCacheSizeLabel->setStyleSheet("color: #444444;");
-    layout->addWidget(tileCacheSizeLabel);
-    connect(m_mapPanel, &MapPanel::tileCacheSizeChanged, this, [tileCacheSizeLabel](int newSize) {
-        auto t = QString("T-Cache\n%1\n of %2").arg(newSize).arg(MAX_TILE_CACHE_ENTRIES);
-        tileCacheSizeLabel->setText(t);
-    });
-
     layout->addWidget(menuButton);
     layout->addStretch();
-    layout->addWidget(tileCacheSizeLabel);
-    layout->addSpacing(8);
     layout->addWidget(zoomLabel);
     layout->addSpacing(8);
 
@@ -71,6 +59,8 @@ SideBar::~SideBar() {}
  */
 void SideBar::setupSheet()
 {
+    auto mapPanel = this->parentWidget()->findChild<MapPanel *>();
+
     // setup the sheet's content
     m_sheetContent = new QWidget(this);
     m_sheetContent->setStyleSheet("background-color: #ffffff; font-family: 'Roboto';");
@@ -106,14 +96,22 @@ void SideBar::setupSheet()
     auto header = new QLabel(this);
     header->setText(R"(<html>
         <h3>Qt5 based Tile-Viewer</h3>
-        <p>stepan.rutz@stepanrutz.com</p>
         )");
     header->setWordWrap(true);
 
     sheetLayout->addWidget(header);
     sheetLayout->addSpacing(16);
-    sheetLayout->addWidget(actions, 0, Qt::AlignHCenter);
+    sheetLayout->addWidget(new InfoItem(
+        InfoValue{.key = "Author", .value = "mailto://stepan.rutz@stepanrutz.com"}, InfoItem::InfoItemSize::Medium, this));
+    sheetLayout->addWidget(new InfoItem(
+        InfoValue{.key = "Tileserver", .value = mapPanel->tileServer().baseUrl}, InfoItem::InfoItemSize::Medium, this));
+    sheetLayout->addWidget(new InfoItem(
+        InfoValue{.key = "Tilecache-Size", .value = QString::number(MAX_TILE_CACHE_ENTRIES)}, InfoItem::InfoItemSize::Medium,
+        this));
+
     sheetLayout->addStretch();
+    sheetLayout->addWidget(actions, 0, Qt::AlignHCenter);
+    sheetLayout->addSpacing(32);
 
     // add another close button to the sheet
     auto sheetButton = new QPushButton("Close", this);

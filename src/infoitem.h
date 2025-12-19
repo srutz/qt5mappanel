@@ -1,6 +1,7 @@
 #ifndef INFO_ITEM_H
 #define INFO_ITEM_H
 
+#include <QLabel>
 #include <QString>
 #include <QWidget>
 
@@ -24,6 +25,9 @@ class InfoItem : public QWidget
 
     InfoValue info() const;
     void setInfo(const InfoValue &info);
+
+  private:
+    void rehash();
 };
 
 #endif // INFO_ITEM_H
