@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QDebug>
 #include <QPalette>
 #include <QScreen>
 #include <QStyleFactory>
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
     palette.setColor(QPalette::HighlightedText, Qt::white);
     a.setPalette(palette);
     MainWindow w;
-    w.resize(1000, 600);
+    w.resize(900, 800);
     w.setWindowTitle("Qt Mappanel");
     auto screen = QGuiApplication::primaryScreen();
     auto screenGeometry = screen->geometry();

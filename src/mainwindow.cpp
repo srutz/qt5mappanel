@@ -31,7 +31,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->setSpacing(0);
     centralWidget->setLayout(layout);
 
-    auto mapPanel = new MapPanel(TileServer{.baseUrl = "https://tile.openstreetmap.org"}, centralWidget);
+    auto baseUrl = "https://tile.opentopomap.org";
+    // auto baseUrl = "https://tile.openstreetmap.org";
+    auto mapPanel = new MapPanel(TileServer{.baseUrl = baseUrl}, centralWidget);
     auto sideBar = new SideBar(mapPanel, centralWidget);
     layout->addWidget(sideBar);
 
