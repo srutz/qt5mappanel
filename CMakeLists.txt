@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt5 REQUIRED COMPONENTS Widgets Network)
 
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})

@@ -5,8 +5,8 @@
 #include <QPushButton>
 
 struct Util {
-    static void setLucideIcon(QPushButton *button, const QString &iconName);
-    static void setLucideIcon(QLabel *label, const QString &iconName);
+    static void setLucideIcon(QPushButton *button, const QString &iconName, int fontSize = 16);
+    static void setLucideIcon(QLabel *label, const QString &iconName, int fontSize = 16);
     static void applyButtonStyle(QPushButton *button);
     static void applyFlatButtonStyle(QPushButton *button);
     static void applyButtonHover(QPushButton *button);

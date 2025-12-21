@@ -10,21 +10,36 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <cmath>
 
 SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPanel(mapPanel)
 {
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
+    // set hint for maximum width for splitter
+    setMaximumWidth(360);
 
     setStyleSheet("font-family: 'Roboto';");
     setAutoFillBackground(true);
 
-    auto header = new QLabel(this);
-    header->setText(R"(<html>
+    auto header = new QWidget(this);
+    auto headerLayout = new QHBoxLayout(header);
+    headerLayout->setSpacing(8);
+    headerLayout->setContentsMargins(0, 0, 0, 0);
+
+    auto headerIcon = new QLabel(header);
+    headerIcon->setStyleSheet("font-family: 'Lucide'; color: #444444;");
+    Util::setLucideIcon(headerIcon, QString::fromUtf8("\uea34"), 36);
+    headerLayout->addWidget(headerIcon, 0, Qt::AlignVCenter);
+
+    auto headerLabel = new QLabel(header);
+    headerLabel->setText(R"(<html>
         <h3>MapPanel</h3>
         )");
-    header->setWordWrap(true);
+    headerLabel->setWordWrap(true);
+    headerLayout->addWidget(headerLabel, 1);
+
     layout->addWidget(header);
 
     auto mousePositionInfo =
@@ -50,13 +65,13 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     layout->addWidget(tileServerLabel, 0, Qt::AlignLeft);
     auto tileServerChooser = new QComboBox(this);
     for (const auto &server : TILE_SERVERS) {
-        qDebug() << "Adding tile server option:" << server.baseUrl;
         tileServerChooser->addItem(server.baseUrl);
     }
     connect(tileServerChooser, &QComboBox::currentTextChanged, this, [this](const QString &baseUrl) {
         for (const auto &server : TILE_SERVERS) {
             if (server.baseUrl == baseUrl) {
                 m_mapPanel->setTileServer(server);
+                m_mapPanel->setZoom(std::min(server.maxZoom, m_mapPanel->zoom()), true);
                 break;
             }
         }
@@ -69,7 +84,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     Util::applyButtonStyle(aboutButton);
     connect(aboutButton, &QPushButton::clicked, this, [this]() { m_sheet->hideSheet(); });
     layout->addWidget(aboutButton, 0, Qt::AlignCenter);
-    layout->addSpacing(8);
+    layout->addSpacing(2);
 
     auto debugButton = new QPushButton("Toggle Debug", this);
     Util::applyButtonStyle(debugButton);
@@ -81,7 +96,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
         m_sheet->hideSheet();
     });
     layout->addWidget(debugButton, 0, Qt::AlignCenter);
-    layout->addSpacing(8);
+    layout->addSpacing(16);
 
     setupSheet();
     connect(aboutButton, &QPushButton::clicked, this, [this]() {

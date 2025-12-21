@@ -1,14 +1,14 @@
 #include "util.h"
 
-void Util::setLucideIcon(QPushButton *button, const QString &iconName)
+void Util::setLucideIcon(QPushButton *button, const QString &iconName, int fontSize)
 {
-    button->setFont(QFont("Lucide", 16));
+    button->setFont(QFont("Lucide", fontSize));
     button->setText(iconName);
 }
 
-void Util::setLucideIcon(QLabel *label, const QString &iconName)
+void Util::setLucideIcon(QLabel *label, const QString &iconName, int fontSize)
 {
-    label->setFont(QFont("Lucide", 16));
+    label->setFont(QFont("Lucide", fontSize));
     label->setText(iconName);
 }
 

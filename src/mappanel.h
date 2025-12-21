@@ -43,7 +43,7 @@ class MapPanel : public QWidget
     void setMapPositionCentered(QPoint p);
 
     int zoom() const;
-    void setZoom(int zoom);
+    void setZoom(int zoom, bool keepCenter = false);
     void zoomInOut(QPoint pivot, int delta);
 
     bool debug() const;

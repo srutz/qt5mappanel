@@ -24,6 +24,9 @@ const TileServer &MapPanel::tileServer() const { return m_tileServer; }
 
 void MapPanel::setTileServer(const TileServer &server)
 {
+    if (server.baseUrl == m_tileServer.baseUrl) {
+        return;
+    }
     m_tileServer = server;
     m_tileCache.clear();
     update();
@@ -53,12 +56,18 @@ void MapPanel::setMapPositionCentered(QPoint p)
 
 int MapPanel::zoom() const { return m_zoom; }
 
-void MapPanel::setZoom(int zoom)
+void MapPanel::setZoom(int zoom, bool keepCenter)
 {
     if (zoom == this->m_zoom) {
         return;
     }
     int oldZoom = this->m_zoom;
+    if (keepCenter) {
+        QPoint center = m_mapPosition + QPoint(this->width() / 2, this->height() / 2);
+        double scale = pow(2.0, zoom - this->m_zoom);
+        QPoint newCenter(static_cast<int>(center.x() * scale), static_cast<int>(center.y() * scale));
+        m_mapPosition = newCenter - QPoint(this->width() / 2, this->height() / 2);
+    }
     this->m_zoom = min(m_tileServer.maxZoom, zoom);
     emit zoomChanged(oldZoom, this->m_zoom);
 }
@@ -215,13 +224,6 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             auto tileKey = TileKey{x, y, m_zoom};
             auto cacheEntry = m_tileCache.getTile(tileKey);
             QString s = QString("T zoom=%1, x=%2, y=%3").arg(m_zoom).arg(x).arg(y);
-            if (cacheEntry.has_value()) {
-                s += QString(", cached");
-                s += cacheEntry->image.has_value() ? ", image" : ", no image";
-                s += QString(", age=%1s").arg(cacheEntry->timestamp.secsTo(QDateTime::currentDateTime()));
-            } else {
-                s += QString(", not cached");
-            }
             painter.setPen(Qt::white);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
         }
