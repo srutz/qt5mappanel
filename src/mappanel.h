@@ -24,8 +24,11 @@ class MapPanel : public QWidget
     bool m_Debug = false;
     QPoint m_mousePosition;
     optional<QPoint> m_downCoords;
+    optional<QPoint> m_selectionStart;
+    optional<QPoint> m_selectionEnd;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
+    void zoomToRectangle(const QPoint &p1, const QPoint &p2);
 
   public:
     MapPanel(const TileServer &server, QWidget *parent = nullptr);

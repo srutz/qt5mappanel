@@ -128,13 +128,22 @@ void MapPanel::wheelEvent(QWheelEvent *event)
 void MapPanel::mousePressEvent(QMouseEvent *event)
 {
     // setMapPositionCentered(event->pos() + mapPosition());
-    m_downCoords = event->pos();
-    setCursor(Qt::ClosedHandCursor);
+    if (event->modifiers() & Qt::ControlModifier) {
+        m_selectionStart = event->pos();
+        m_selectionEnd = event->pos();
+        setCursor(Qt::CrossCursor);
+    } else {
+        m_downCoords = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+    }
 }
 
 void MapPanel::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_downCoords.has_value()) {
+    if (m_selectionStart.has_value()) {
+        m_selectionEnd = event->pos();
+        update();
+    } else if (m_downCoords.has_value()) {
         QPoint delta = event->pos() - m_downCoords.value();
         setMapPosition(m_mapPosition - delta);
         m_downCoords = event->pos();
@@ -145,11 +154,66 @@ void MapPanel::mouseMoveEvent(QMouseEvent *event)
 
 void MapPanel::mouseReleaseEvent(QMouseEvent *event)
 {
+    if (m_selectionStart.has_value() && m_selectionEnd.has_value()) {
+        zoomToRectangle(m_selectionStart.value(), m_selectionEnd.value());
+        m_selectionStart.reset();
+        m_selectionEnd.reset();
+        update();
+    }
     m_downCoords.reset();
     setCursor(Qt::ArrowCursor);
 }
 
-void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) {};
+void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) {}
+
+void MapPanel::zoomToRectangle(const QPoint &p1, const QPoint &p2)
+{
+    // Calculate rectangle bounds
+    int x1 = qMin(p1.x(), p2.x());
+    int y1 = qMin(p1.y(), p2.y());
+    int x2 = qMax(p1.x(), p2.x());
+    int y2 = qMax(p1.y(), p2.y());
+    int rectWidth = x2 - x1;
+    int rectHeight = y2 - y1;
+
+    // Ignore very small selections (likely accidental clicks)
+    if (rectWidth < 10 || rectHeight < 10) {
+        return;
+    }
+
+    // Calculate the center of the selection in map coordinates
+    QPoint rectCenter((x1 + x2) / 2, (y1 + y2) / 2);
+    QPoint mapCenter = m_mapPosition + rectCenter;
+
+    // Calculate zoom level needed to fit the rectangle
+    int viewWidth = width();
+    int viewHeight = height();
+
+    // Find the zoom level where the selection fits best
+    int currentZoom = m_zoom;
+    int targetZoom = currentZoom;
+
+    // Calculate how much the selected area needs to scale to fit the view
+    double scaleX = static_cast<double>(viewWidth) / rectWidth;
+    double scaleY = static_cast<double>(viewHeight) / rectHeight;
+    double scale = qMin(scaleX, scaleY) * 0.9; // 0.9 for some margin
+
+    // Convert scale to zoom level change
+    int zoomDelta = static_cast<int>(round(log2(scale)));
+    targetZoom = qMax(1, qMin(m_tileServer.maxZoom, currentZoom + zoomDelta));
+
+    // Apply zoom and center
+    if (targetZoom != currentZoom) {
+        double zoomScale = pow(2.0, targetZoom - currentZoom);
+        QPoint newMapCenter(static_cast<int>(mapCenter.x() * zoomScale), static_cast<int>(mapCenter.y() * zoomScale));
+        setZoom(targetZoom, false);
+        setMapPositionCentered(newMapCenter);
+    } else {
+        setMapPositionCentered(mapCenter);
+    }
+
+    update();
+}
 
 // see
 // https://sourceforge.net/p/mappanel/code/HEAD/tree/com.roots.map/src/com/roots/map/MapPanel.java#l585
@@ -176,6 +240,20 @@ void MapPanel::paintEvent(QPaintEvent *event)
             dx += TILE_SIZE;
         }
         dy += TILE_SIZE;
+    }
+
+    // Draw selection rectangle if active
+    if (m_selectionStart.has_value() && m_selectionEnd.has_value()) {
+        QPoint p1 = m_selectionStart.value();
+        QPoint p2 = m_selectionEnd.value();
+        int x = qMin(p1.x(), p2.x());
+        int y = qMin(p1.y(), p2.y());
+        int w = qAbs(p2.x() - p1.x());
+        int h = qAbs(p2.y() - p1.y());
+
+        painter.setPen(QPen(QColor(0, 120, 215), 2));
+        painter.setBrush(QBrush(QColor(0, 120, 215, 50)));
+        painter.drawRect(x, y, w, h);
     }
 }
 
