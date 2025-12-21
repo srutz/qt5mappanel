@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QUrl>
 #include <QVBoxLayout>
 
 SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPanel(mapPanel)
@@ -37,13 +38,25 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->addWidget(header);
     layout->addSpacing(12);
 
-    auto doSearch = [this](const QString &query) {
-        auto url = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=25").arg(query);
-        auto fetcher = new DataFetcher(url, this);
+    auto searchLabel = new QLabel("Search locations:", this);
+    Util::applyLabelStyle(searchLabel);
+    layout->addWidget(searchLabel, 0, Qt::AlignLeft);
+    auto searchEdit = new QLineEdit(this);
+    layout->addWidget(searchEdit, 1);
+    auto searchButton = new QPushButton("Search", this);
+    Util::applyFlatButtonStyle(searchButton);
+    connect(searchButton, &QPushButton::clicked, this, [this, searchEdit] {
+        auto encodedQuery = QString::fromUtf8(QUrl::toPercentEncoding(searchEdit->text().trimmed()));
+        auto url = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=25").arg(encodedQuery);
+        auto fetcher = new DataFetcher("nominatim search", this);
         DataFetcher::FetchOptions options{.url = url};
         connect(fetcher, &DataFetcher::responseReceived, this, [this, fetcher](const QByteArray &data) {
             QString s = QString::fromUtf8(data);
-            qDebug() << "Search results:" << s;
+            auto results = NominatimResult::fromJsonString(s);
+            setResults(results);
+            for (const auto &result : results) {
+                qDebug() << " - " << result.display_name << " (" << result.lat << "," << result.lon << ")";
+            }
             fetcher->deleteLater();
         });
         connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
@@ -51,19 +64,15 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
             fetcher->deleteLater();
         });
         fetcher->fetch(options);
-    };
-    auto searchLabel = new QLabel("Search locations:", this);
-    Util::applyLabelStyle(searchLabel);
-    layout->addWidget(searchLabel, 0, Qt::AlignLeft);
-    auto searchEdit = new QLineEdit(this);
-    connect(searchEdit, &QLineEdit::returnPressed, this, [this, searchEdit, &doSearch]() { doSearch(searchEdit->text()); });
-    layout->addWidget(searchEdit, 1);
-    auto searchButton = new QPushButton("Search", this);
-    Util::applyFlatButtonStyle(searchButton);
-    connect(searchButton, &QPushButton::clicked, this, [this, searchEdit, &doSearch] { doSearch(searchEdit->text()); });
+    });
+    connect(searchEdit, &QLineEdit::returnPressed, this, [this, searchButton]() { searchButton->click(); });
     layout->addWidget(searchButton, 0, Qt::AlignRight);
 
     layout->addStretch();
 }
 
 SearchPanel::~SearchPanel() {}
+
+QVector<NominatimResult> SearchPanel::results() const { return m_results; }
+
+void SearchPanel::setResults(const QVector<NominatimResult> &results) { m_results = results; }
