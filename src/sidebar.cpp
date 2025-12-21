@@ -17,8 +17,6 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
-    // set hint for maximum width for splitter
-    setMaximumWidth(360);
 
     setStyleSheet("font-family: 'Roboto';");
     setAutoFillBackground(true);

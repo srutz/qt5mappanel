@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "mappanel.h"
 #include "maputil.h"
+#include "searchpanel.h"
 #include "sidebar.h"
 #include "util.h"
 #include <QDebug>
@@ -12,6 +13,7 @@
 #include <QResizeEvent>
 #include <QSplitter>
 #include <QString>
+#include <QTabWidget>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -52,8 +54,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         mapPanel->setMapPositionCentered(MapUtil::latLonToPosition(51.5074, -0.1278, mapPanel->zoom()));
     });
 
+    auto tabs = new QTabWidget(splitter);
+    tabs->setTabPosition(QTabWidget::South);
+    tabs->setMaximumWidth(360);
+
     auto sideBar = new SideBar(mapPanel, splitter);
-    splitter->addWidget(sideBar);
+    auto searchPanel = new SearchPanel(mapPanel, splitter);
+    tabs->addTab(sideBar, "Control");
+    tabs->addTab(searchPanel, "Search");
+
+    splitter->addWidget(tabs);
     splitter->addWidget(mapPanel);
 
     splitter->setSizes({200, 800});
