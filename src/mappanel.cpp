@@ -9,9 +9,7 @@ using namespace std;
 
 MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent), m_tileServer(server)
 {
-    qDebug() << "MapPanel created with TileServer URL:" << m_tileServer.baseUrl;
     this->setContentsMargins(0, 0, 0, 0);
-
     // Enable double buffering to reduce flicker
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
