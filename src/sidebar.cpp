@@ -17,7 +17,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
 
-    setStyleSheet("background-color: #ffffff; font-family: 'Roboto';");
+    setStyleSheet("font-family: 'Roboto';");
     setAutoFillBackground(true);
 
     auto header = new QLabel(this);
@@ -35,6 +35,14 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
         mousePositionInfo->setValue(t);
     });
     layout->addWidget(mousePositionInfo);
+    layout->addSpacing(12);
+
+    auto zoomInfo = new InfoItem(
+        InfoValue{.key = "Zoom Level", .value = QString::number(m_mapPanel->zoom())}, InfoItem::InfoItemSize::Medium, this);
+    connect(m_mapPanel, &MapPanel::zoomChanged, this, [zoomInfo](int oldZoom, int zoom) {
+        zoomInfo->setValue(QString::number(zoom));
+    });
+    layout->addWidget(zoomInfo);
     layout->addSpacing(12);
 
     auto tileServerLabel = new QLabel("Tile Server:", this);
@@ -73,19 +81,6 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
         m_sheet->hideSheet();
     });
     layout->addWidget(debugButton, 0, Qt::AlignCenter);
-
-    auto zoomLabel = new QLabel("", this);
-    zoomLabel->setAlignment(Qt::AlignCenter);
-    zoomLabel->setWordWrap(true);
-    zoomLabel->setFont(QFont("Roboto", 7));
-    zoomLabel->setStyleSheet("color: #444444;");
-    layout->addWidget(zoomLabel);
-    connect(m_mapPanel, &MapPanel::zoomChanged, this, [zoomLabel](int oldZoom, int zoom) {
-        auto t = QString("Zoom %1").arg(zoom);
-        zoomLabel->setText(t);
-    });
-
-    layout->addWidget(zoomLabel);
     layout->addSpacing(8);
 
     setupSheet();
