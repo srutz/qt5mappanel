@@ -75,19 +75,14 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->addWidget(resultsLabel, 0, Qt::AlignLeft);
     m_resultsTable = new QTableView(this);
     m_resultsTable->setStyleSheet("QTableView { font-size: 13px; border: 1px solid #dddddd; }");
-    m_resultsTable->setSortingEnabled(true);
+    m_resultsTable->setSortingEnabled(false);
     m_resultsTable->horizontalHeader()->setStretchLastSection(true);
     m_resultsTable->verticalHeader()->hide();
+    m_resultsTable->horizontalHeader()->hide();
     m_resultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_resultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    connect(m_resultsTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index) {
-        if (index.isValid() && index.row() < m_results.size()) {
-            const auto &result = m_results[index.row()];
-            auto pos = MapUtil::latLonToPosition(result.lat, result.lon, m_mapPanel->zoom());
-            m_mapPanel->setMapPositionCentered(pos);
-        }
-    });
     layout->addWidget(m_resultsTable, 1);
+    layout->addSpacing(12);
 
     layout->addStretch();
 }
@@ -108,4 +103,15 @@ void SearchPanel::setResults(const QVector<NominatimResult> &results)
         model->setItem(row, 0, item);
     }
     m_resultsTable->setModel(model);
+
+    // Reconnect selection handler after model change
+    connect(
+        m_resultsTable->selectionModel(), &QItemSelectionModel::currentChanged, this,
+        [this](const QModelIndex &current, const QModelIndex &) {
+            if (current.isValid() && current.row() < m_results.size()) {
+                const auto &result = m_results[current.row()];
+                auto pos = MapUtil::latLonToPosition(result.lat, result.lon, m_mapPanel->zoom());
+                m_mapPanel->setMapPositionCentered(pos);
+            }
+        });
 }
