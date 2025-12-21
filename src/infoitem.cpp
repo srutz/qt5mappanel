@@ -1,5 +1,6 @@
 
 #include "infoitem.h"
+#include "util.h"
 #include <QDesktopServices>
 #include <QLabel>
 #include <QUrl>
@@ -25,7 +26,7 @@ InfoItem::InfoItem(const InfoValue &info, InfoItemSize size, QWidget *parent) : 
     layout->setSpacing(1);
     m_keyLabel = new QLabel(this);
     m_keyLabel->setText(m_info.key);
-    m_keyLabel->setStyleSheet("color: #555555; font-size: " + fontsize + "px");
+    Util::applyLabelStyle(m_keyLabel, fontsize.toInt());
     layout->addWidget(m_keyLabel);
     m_valueLabel = new QLabel(this);
     m_valueLabel->setText(m_info.value);

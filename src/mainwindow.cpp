@@ -44,12 +44,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     auto splitter = new QSplitter(Qt::Horizontal, content);
     contentLayout->addWidget(splitter);
 
-    auto baseUrl = "https://tile.opentopomap.org";
-    // auto baseUrl = "https://tile.openstreetmap.org";
-    auto mapPanel = new MapPanel(TileServer{.baseUrl = baseUrl}, centralWidget);
+    auto mapPanel = new MapPanel(TILE_SERVERS[0], centralWidget);
     mapPanel->setZoom(6);
     // mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
-    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.5074, -0.1278, mapPanel->zoom()));
+    QTimer::singleShot(1, this, [mapPanel]() {
+        mapPanel->setMapPositionCentered(MapUtil::latLonToPosition(51.5074, -0.1278, mapPanel->zoom()));
+    });
 
     auto sideBar = new SideBar(mapPanel, splitter);
     splitter->addWidget(sideBar);

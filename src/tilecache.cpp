@@ -6,7 +6,7 @@ TileCache::TileCache() {}
 
 TileCache::~TileCache() {}
 
-optional<CacheEntry> TileCache::getTile(const TileKey &tileKey)
+optional<CacheEntry> TileCache::getTile(const TileKey &tileKey) const
 {
     if (m_cache.contains(tileKey)) {
         return m_cache.value(tileKey);
@@ -39,7 +39,9 @@ void TileCache::evictOldEntries()
     }
 }
 
-void TileCache::dump()
+void TileCache::clear() { m_cache.clear(); }
+
+void TileCache::dump() const
 {
     qDebug() << "TileCache dump: size =" << m_cache.size();
     for (auto it = m_cache.begin(); it != m_cache.end(); ++it) {

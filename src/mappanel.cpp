@@ -22,6 +22,13 @@ MapPanel::~MapPanel() {}
 
 const TileServer &MapPanel::tileServer() const { return m_tileServer; }
 
+void MapPanel::setTileServer(const TileServer &server)
+{
+    m_tileServer = server;
+    m_tileCache.clear();
+    update();
+}
+
 const QPoint &MapPanel::mousePosition() const { return m_mousePosition; }
 
 void MapPanel::setMousePosition(const QPoint &position)

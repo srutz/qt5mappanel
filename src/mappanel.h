@@ -11,11 +11,6 @@
 
 using std::optional;
 
-struct TileServer {
-    QString baseUrl;
-    int maxZoom = 18;
-};
-
 class MapPanel : public QWidget
 {
     Q_OBJECT
@@ -38,6 +33,7 @@ class MapPanel : public QWidget
     ~MapPanel();
 
     const TileServer &tileServer() const;
+    void setTileServer(const TileServer &server);
 
     const QPoint &mousePosition() const;
     void setMousePosition(const QPoint &position);

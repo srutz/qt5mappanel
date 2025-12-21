@@ -34,9 +34,10 @@ class TileCache
     TileCache();
     ~TileCache();
 
-    optional<CacheEntry> getTile(const TileKey &tileKey);
+    optional<CacheEntry> getTile(const TileKey &tileKey) const;
     void putTile(const TileKey &tileKey, const optional<QImage> &image);
-    void dump();
+    void dump() const;
+    void clear();
     int size() const { return m_cache.size(); }
 
   private:

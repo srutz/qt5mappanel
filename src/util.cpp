@@ -82,3 +82,13 @@ void Util::applyButtonHover(QPushButton *button)
         "    background-color: #e5e5e5;"
         "}");
 }
+
+void Util::applyLabelStyle(QLabel *label, int fontSize)
+{
+    label->setStyleSheet(QString(
+                             "QLabel {"
+                             "    color: #555555;"
+                             "    font-size: %1px;"
+                             "}")
+                             .arg(fontSize));
+}

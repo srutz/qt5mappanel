@@ -4,6 +4,7 @@
 #include "mappanel.h"
 #include "maputil.h"
 #include "util.h"
+#include <QComboBox>
 #include <QFont>
 #include <QPalette>
 #include <QPushButton>
@@ -13,7 +14,6 @@
 SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPanel(mapPanel)
 {
     auto layout = new QVBoxLayout(this);
-    layout->setSpacing(13);
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
 
@@ -35,29 +35,44 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
         mousePositionInfo->setValue(t);
     });
     layout->addWidget(mousePositionInfo);
+    layout->addSpacing(12);
+
+    auto tileServerLabel = new QLabel("Tile Server:", this);
+    Util::applyLabelStyle(tileServerLabel);
+    layout->addWidget(tileServerLabel, 0, Qt::AlignLeft);
+    auto tileServerChooser = new QComboBox(this);
+    for (const auto &server : TILE_SERVERS) {
+        qDebug() << "Adding tile server option:" << server.baseUrl;
+        tileServerChooser->addItem(server.baseUrl);
+    }
+    connect(tileServerChooser, &QComboBox::currentTextChanged, this, [this](const QString &baseUrl) {
+        for (const auto &server : TILE_SERVERS) {
+            if (server.baseUrl == baseUrl) {
+                m_mapPanel->setTileServer(server);
+                break;
+            }
+        }
+    });
+    layout->addWidget(tileServerChooser, 0, Qt::AlignLeft);
 
     layout->addStretch();
 
     auto aboutButton = new QPushButton("About Qt-Mappanel", this);
     Util::applyButtonStyle(aboutButton);
-    connect(aboutButton, &QPushButton::clicked, this, [this]() {
-        QTimer::singleShot(50, this, [this]() {
-
-        });
-        m_sheet->hideSheet();
-    });
+    connect(aboutButton, &QPushButton::clicked, this, [this]() { m_sheet->hideSheet(); });
     layout->addWidget(aboutButton, 0, Qt::AlignCenter);
+    layout->addSpacing(8);
 
-    auto settingsButton = new QPushButton("Toggle Debug", this);
-    Util::applyButtonStyle(settingsButton);
-    connect(settingsButton, &QPushButton::clicked, this, [this]() {
+    auto debugButton = new QPushButton("Toggle Debug", this);
+    Util::applyButtonStyle(debugButton);
+    connect(debugButton, &QPushButton::clicked, this, [this]() {
         auto parentMapPanel = this->parentWidget()->findChild<MapPanel *>();
         if (parentMapPanel) {
             parentMapPanel->setDebug(!parentMapPanel->debug());
         }
         m_sheet->hideSheet();
     });
-    layout->addWidget(settingsButton, 0, Qt::AlignCenter);
+    layout->addWidget(debugButton, 0, Qt::AlignCenter);
 
     auto zoomLabel = new QLabel("", this);
     zoomLabel->setAlignment(Qt::AlignCenter);

@@ -10,6 +10,7 @@ struct Util {
     static void applyButtonStyle(QPushButton *button);
     static void applyFlatButtonStyle(QPushButton *button);
     static void applyButtonHover(QPushButton *button);
+    static void applyLabelStyle(QLabel *label, int fontSize = 15);
 };
 
 #endif // UTIL_H
