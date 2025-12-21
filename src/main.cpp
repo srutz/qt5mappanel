@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     palette.setColor(QPalette::HighlightedText, Qt::white);
     a.setPalette(palette);
     MainWindow w;
-    w.resize(900, 800);
+    w.resize(1100, 800);
     w.setWindowTitle("Qt Mappanel");
     auto screen = QGuiApplication::primaryScreen();
     auto screenGeometry = screen->geometry();

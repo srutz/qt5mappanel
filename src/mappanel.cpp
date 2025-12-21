@@ -15,11 +15,23 @@ MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent),
     // Enable double buffering to reduce flicker
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
+    setMouseTracking(true);
 }
 
 MapPanel::~MapPanel() {}
 
 const TileServer &MapPanel::tileServer() const { return m_tileServer; }
+
+const QPoint &MapPanel::mousePosition() const { return m_mousePosition; }
+
+void MapPanel::setMousePosition(const QPoint &position)
+{
+    if (position == m_mousePosition) {
+        return;
+    }
+    m_mousePosition = position;
+    emit mousePositionChanged(m_mousePosition);
+}
 
 const QPoint &MapPanel::mapPosition() const { return m_mapPosition; }
 
@@ -105,6 +117,7 @@ void MapPanel::mouseMoveEvent(QMouseEvent *event)
         m_downCoords = event->pos();
         update();
     }
+    setMousePosition(event->pos());
 }
 
 void MapPanel::mouseReleaseEvent(QMouseEvent *event)

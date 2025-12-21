@@ -28,6 +28,7 @@ class MapPanel : public QWidget
     QPoint m_mapPosition = {0, 0};
     int m_zoom = 8;
     bool m_Debug = false;
+    QPoint m_mousePosition;
     optional<QPoint> m_downCoords;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
@@ -37,6 +38,9 @@ class MapPanel : public QWidget
     ~MapPanel();
 
     const TileServer &tileServer() const;
+
+    const QPoint &mousePosition() const;
+    void setMousePosition(const QPoint &position);
 
     const QPoint &mapPosition() const;
     void setMapPosition(QPoint p);
@@ -61,6 +65,7 @@ class MapPanel : public QWidget
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
   signals:
+    void mousePositionChanged(const QPoint &position);
     void zoomChanged(int oldZoom, int zoom);
     void tileCacheSizeChanged(int newSize);
 };

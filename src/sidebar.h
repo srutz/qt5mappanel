@@ -10,8 +10,8 @@ class SideBar : public QWidget
 {
     Q_OBJECT
 
-    Sheet *m_sheet;
     MapPanel *m_mapPanel;
+    Sheet *m_sheet;
     QWidget *m_sheetContent;
     void setupSheet();
 

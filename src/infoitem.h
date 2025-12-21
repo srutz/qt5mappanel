@@ -25,6 +25,8 @@ class InfoItem : public QWidget
 
     InfoValue info() const;
     void setInfo(const InfoValue &info);
+    void setKey(const QString &key);
+    void setValue(const QString &value);
 
   private:
     void rehash();

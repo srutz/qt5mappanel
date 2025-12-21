@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QSplitter>
 #include <QString>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     }
 
     auto centralWidget = new QWidget(this);
+    centralWidget->setObjectName("centralWidget");
     setCentralWidget(centralWidget);
 
     auto layout = new QHBoxLayout(centralWidget);
@@ -31,15 +33,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     layout->setSpacing(0);
     centralWidget->setLayout(layout);
 
+    auto content = new QWidget(centralWidget);
+    layout->addWidget(content);
+
+    auto contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
+    content->setLayout(contentLayout);
+
+    auto splitter = new QSplitter(Qt::Horizontal, content);
+    contentLayout->addWidget(splitter);
+
     auto baseUrl = "https://tile.opentopomap.org";
     // auto baseUrl = "https://tile.openstreetmap.org";
     auto mapPanel = new MapPanel(TileServer{.baseUrl = baseUrl}, centralWidget);
-    auto sideBar = new SideBar(mapPanel, centralWidget);
-    layout->addWidget(sideBar);
-
     mapPanel->setZoom(6);
-    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
-    layout->addWidget(mapPanel);
+    // mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.4778684, -0.004053, mapPanel->zoom()));
+    mapPanel->setMapPositionCentered(MapUtil::latLonToTileXY(51.5074, -0.1278, mapPanel->zoom()));
+
+    auto sideBar = new SideBar(mapPanel, splitter);
+    splitter->addWidget(sideBar);
+    splitter->addWidget(mapPanel);
+
+    splitter->setSizes({200, 800});
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

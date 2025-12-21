@@ -47,6 +47,19 @@ void InfoItem::setInfo(const InfoValue &info)
     rehash();
 }
 
+void InfoItem::setKey(const QString &key)
+{
+    m_info.key = key;
+    m_keyLabel->setText(m_info.key);
+}
+
+void InfoItem::setValue(const QString &value)
+{
+    m_info.value = value;
+    m_valueLabel->setText(m_info.value);
+    rehash();
+}
+
 void InfoItem::rehash()
 {
     if (m_info.value.toLower().startsWith("https://") || m_info.value.toLower().startsWith("mailto://")) {
