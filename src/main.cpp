@@ -7,14 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    // set Ui-theme
-    // List available styles
-    QStringList styles = QStyleFactory::keys();
-    qDebug() << "Available styles:" << styles;
-
-    // Apply a style
     QApplication::setStyle(QStyleFactory::create("Fusion"));
-
     QApplication a(argc, argv);
 
     // Set white window decoration

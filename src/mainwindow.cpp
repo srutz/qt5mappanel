@@ -3,6 +3,7 @@
 #include "maputil.h"
 #include "sidebar.h"
 #include "util.h"
+#include <QDebug>
 #include <QFontDatabase>
 #include <QHBoxLayout>
 #include <QLabel>

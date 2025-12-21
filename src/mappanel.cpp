@@ -45,7 +45,14 @@ void MapPanel::setMousePosition(const QPoint &position)
 
 const QPoint &MapPanel::mapPosition() const { return m_mapPosition; }
 
-void MapPanel::setMapPosition(QPoint p) { m_mapPosition = p; }
+void MapPanel::setMapPosition(QPoint p)
+{
+    if (p == m_mapPosition) {
+        return;
+    }
+    m_mapPosition = p;
+    emit mapPositionChanged(p);
+}
 
 void MapPanel::setMapPositionCentered(QPoint p)
 {

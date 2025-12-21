@@ -1,7 +1,6 @@
 #ifndef SHEET_H
 #define SHEET_H
 
-#include <QKeyEvent>
 #include <QPropertyAnimation>
 #include <QWidget>
 #include <functional>

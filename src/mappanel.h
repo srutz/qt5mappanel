@@ -3,7 +3,6 @@
 
 #include "constants.h"
 #include "tilecache.h"
-#include <QDebug>
 #include <QPoint>
 #include <QString>
 #include <QWidget>
@@ -62,6 +61,7 @@ class MapPanel : public QWidget
 
   signals:
     void mousePositionChanged(const QPoint &position);
+    void mapPositionChanged(const QPoint &position);
     void zoomChanged(int oldZoom, int zoom);
     void tileCacheSizeChanged(int newSize);
 };

@@ -89,10 +89,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     auto debugButton = new QPushButton("Toggle Debug", this);
     Util::applyButtonStyle(debugButton);
     connect(debugButton, &QPushButton::clicked, this, [this]() {
-        auto parentMapPanel = this->parentWidget()->findChild<MapPanel *>();
-        if (parentMapPanel) {
-            parentMapPanel->setDebug(!parentMapPanel->debug());
-        }
+        m_mapPanel->setDebug(!m_mapPanel->debug());
         m_sheet->hideSheet();
     });
     layout->addWidget(debugButton, 0, Qt::AlignCenter);
@@ -132,11 +129,13 @@ void SideBar::setupSheet()
     sheetLayout->addWidget(header);
     sheetLayout->addSpacing(16);
     sheetLayout->addWidget(new InfoItem(
-        InfoValue{.key = "Author", .value = "mailto://stepan.rutz@stepanrutz.com"}, InfoItem::InfoItemSize::Medium, this));
+        InfoValue{.key = "Author", .value = "mailto://stepan.rutz@stepanrutz.com"}, InfoItem::InfoItemSize::Medium,
+        m_sheetContent));
     sheetLayout->addWidget(new InfoItem(
-        InfoValue{.key = "Sourcecode", .value = "https://github.com/srutz/qt5mappanel"}, InfoItem::InfoItemSize::Medium, this));
-    sheetLayout->addWidget(
-        new InfoItem(InfoValue{.key = "Made with C++/Qt5", .value = "https://www.qt.io/"}, InfoItem::InfoItemSize::Medium, this));
+        InfoValue{.key = "Sourcecode", .value = "https://github.com/srutz/qt5mappanel"}, InfoItem::InfoItemSize::Medium,
+        m_sheetContent));
+    sheetLayout->addWidget(new InfoItem(
+        InfoValue{.key = "Made with C++/Qt5", .value = "https://www.qt.io/"}, InfoItem::InfoItemSize::Medium, m_sheetContent));
 
     sheetLayout->addStretch();
 
