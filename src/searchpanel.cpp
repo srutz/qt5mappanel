@@ -1,16 +1,19 @@
 
 #include "searchpanel.h"
 #include "datafetcher.h"
+#include "maputil.h"
 #include "util.h"
+
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
+#include <QStandardItemModel>
 #include <QUrl>
 #include <QVBoxLayout>
 
 SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPanel(mapPanel)
 {
-
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
@@ -38,10 +41,8 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->addWidget(header);
     layout->addSpacing(12);
 
-    auto searchLabel = new QLabel("Search locations:", this);
-    Util::applyLabelStyle(searchLabel);
-    layout->addWidget(searchLabel, 0, Qt::AlignLeft);
     auto searchEdit = new QLineEdit(this);
+    searchEdit->setPlaceholderText("Enter search query");
     layout->addWidget(searchEdit, 1);
     auto searchButton = new QPushButton("Search", this);
     Util::applyFlatButtonStyle(searchButton);
@@ -67,6 +68,26 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     });
     connect(searchEdit, &QLineEdit::returnPressed, this, [this, searchButton]() { searchButton->click(); });
     layout->addWidget(searchButton, 0, Qt::AlignRight);
+    layout->addSpacing(12);
+
+    auto resultsLabel = new QLabel("Results:", this);
+    Util::applyLabelStyle(resultsLabel);
+    layout->addWidget(resultsLabel, 0, Qt::AlignLeft);
+    m_resultsTable = new QTableView(this);
+    m_resultsTable->setStyleSheet("QTableView { font-size: 13px; border: 1px solid #dddddd; }");
+    m_resultsTable->setSortingEnabled(true);
+    m_resultsTable->horizontalHeader()->setStretchLastSection(true);
+    m_resultsTable->verticalHeader()->hide();
+    m_resultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_resultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    connect(m_resultsTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index) {
+        if (index.isValid() && index.row() < m_results.size()) {
+            const auto &result = m_results[index.row()];
+            auto pos = MapUtil::latLonToPosition(result.lat, result.lon, m_mapPanel->zoom());
+            m_mapPanel->setMapPositionCentered(pos);
+        }
+    });
+    layout->addWidget(m_resultsTable, 1);
 
     layout->addStretch();
 }
@@ -75,4 +96,16 @@ SearchPanel::~SearchPanel() {}
 
 QVector<NominatimResult> SearchPanel::results() const { return m_results; }
 
-void SearchPanel::setResults(const QVector<NominatimResult> &results) { m_results = results; }
+void SearchPanel::setResults(const QVector<NominatimResult> &results)
+{
+    m_results = results;
+    // set the results in the table view
+    // for simplicity, we will just show the display_name in a single column
+    auto model = new QStandardItemModel(results.size(), 1, this);
+    model->setHeaderData(0, Qt::Horizontal, "Place");
+    for (int row = 0; row < results.size(); ++row) {
+        auto item = new QStandardItem(results[row].display_name);
+        model->setItem(row, 0, item);
+    }
+    m_resultsTable->setModel(model);
+}

@@ -63,6 +63,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tabs->addTab(sideBar, "Control");
     tabs->addTab(searchPanel, "Search");
 
+    tabs->setStyleSheet(R"(
+        QTabWidget::pane {
+            border: 1px solid #dddddd;
+        }
+        QTabBar::tab {
+            color: #555555;
+            font-size: 11px;
+            font-family: 'Roboto';
+            border: 1px solid #dddddd;
+            padding: 6px 12px;
+        }
+        QTabBar::tab:selected {
+            background-color: white;
+            border-bottom-color: white;
+        }
+        QTabBar::tab:!selected {
+            background-color: #f5f5f5;
+        }
+    )");
+
     splitter->addWidget(tabs);
     splitter->addWidget(mapPanel);
 

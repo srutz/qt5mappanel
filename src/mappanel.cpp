@@ -50,6 +50,7 @@ void MapPanel::setMapPosition(QPoint p)
     }
     m_mapPosition = p;
     emit mapPositionChanged(p);
+    update();
 }
 
 void MapPanel::setMapPositionCentered(QPoint p)
@@ -95,7 +96,6 @@ void MapPanel::zoomInOut(QPoint pivot, int delta)
     } else if (delta < 0) {
         setMapPosition(QPoint((p.x() - dx) / 2, (p.y() - dy) / 2));
     }
-    update();
 }
 
 bool MapPanel::debug() const { return m_Debug; }
