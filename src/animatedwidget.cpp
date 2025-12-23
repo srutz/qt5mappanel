@@ -1,17 +1,12 @@
 #include "animatedwidget.h"
 
-AnimatedWidget::AnimatedWidget(QWidget *parent)
-    : m_position(QPoint(0, 0)), positionAnimation(nullptr), QWidget{parent}
-{}
+AnimatedWidget::AnimatedWidget(QWidget *parent) : QWidget(parent), m_position(QPoint(0, 0)), positionAnimation(nullptr) {}
 
-QPoint AnimatedWidget::position() const
-{
-    return this->m_position;
-}
+QPoint AnimatedWidget::position() const { return this->m_position; }
 
 void AnimatedWidget::setPosition(const QPoint position)
 {
-    //qDebug() << "setPosition. oldValue=" << m_position << " to " << position << (m_position == position);
+    // qDebug() << "setPosition. oldValue=" << m_position << " to " << position << (m_position == position);
     if (m_position == position) {
         return;
     }
@@ -34,8 +29,6 @@ void AnimatedWidget::setPositionA(const QPoint position, int durationMs, std::fu
     anim->setEndValue(position);
     anim->start();
     if (onComplete) {
-        connect(anim, &QPropertyAnimation::finished, this, [=,this] {
-            onComplete();
-        });
+        connect(anim, &QPropertyAnimation::finished, this, [=, this] { onComplete(); });
     }
 }

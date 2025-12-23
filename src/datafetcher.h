@@ -19,13 +19,18 @@ class DataFetcher : public QObject
     struct FetchOptions {
         QString url;
         QString method = "GET"; // GET, POST, PUT, DELETE
-        QMap<QString, QString> headers;
-        std::optional<QByteArray> data; // POST / PUT / PATCH upload-data
+        QMap<QString, QString> headers = {};
+        std::optional<QByteArray> data = QByteArray(); // POST / PUT / PATCH upload-data
     };
 
     explicit DataFetcher(const QString &m_info, QObject *parent = nullptr);
     ~DataFetcher();
     void fetch(const FetchOptions &options);
+
+  private:
+    QNetworkAccessManager *m_manager;
+    QString m_info;
+    bool m_completed = false;
 
   signals:
     void responseReceived(const QByteArray &document);
@@ -33,11 +38,6 @@ class DataFetcher : public QObject
 
   private slots:
     void handleNetworkResponse(QNetworkReply *reply);
-
-  private:
-    QNetworkAccessManager *manager;
-    QString m_info;
-    bool m_completed = false;
 };
 
 #endif // DATAFETCHER_H

@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QStandardItemModel>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -18,8 +19,8 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
 
-    setStyleSheet("font-family: 'Roboto';");
     setAutoFillBackground(true);
+    setStyleSheet("font-family: 'Roboto'; background-color: #ffffff;");
 
     auto header = new QWidget(this);
     auto headerLayout = new QHBoxLayout(header);
@@ -55,9 +56,6 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
             QString s = QString::fromUtf8(data);
             auto results = NominatimResult::fromJsonString(s);
             setResults(results);
-            for (const auto &result : results) {
-                qDebug() << " - " << result.display_name << " (" << result.lat << "," << result.lon << ")";
-            }
             fetcher->deleteLater();
         });
         connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
@@ -85,6 +83,8 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->addSpacing(12);
 
     layout->addStretch();
+
+    QTimer::singleShot(1, this, [searchEdit]() { searchEdit->setFocus(); });
 }
 
 SearchPanel::~SearchPanel() {}

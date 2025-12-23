@@ -56,34 +56,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     auto tabs = new QTabWidget(splitter);
     tabs->setTabPosition(QTabWidget::South);
-    tabs->setMaximumWidth(360);
 
     auto sideBar = new SideBar(mapPanel, splitter);
     auto searchPanel = new SearchPanel(mapPanel, splitter);
-    tabs->addTab(sideBar, "Control");
     tabs->addTab(searchPanel, "Search");
+    tabs->addTab(sideBar, "Control");
+    auto tabContainer = new QWidget(this);
+    tabContainer->setMaximumWidth(460);
+    auto tabContainerLayout = new QVBoxLayout(tabContainer);
+    tabContainerLayout->setContentsMargins(9, 9, 9, 9);
+    tabContainerLayout->addWidget(tabs);
 
-    tabs->setStyleSheet(R"(
-        QTabWidget::pane {
-            border: 1px solid #dddddd;
-        }
-        QTabBar::tab {
-            color: #555555;
-            font-size: 11px;
-            font-family: 'Roboto';
-            border: 1px solid #dddddd;
-            padding: 6px 12px;
-        }
-        QTabBar::tab:selected {
-            background-color: white;
-            border-bottom-color: white;
-        }
-        QTabBar::tab:!selected {
-            background-color: #f5f5f5;
-        }
-    )");
-
-    splitter->addWidget(tabs);
+    splitter->addWidget(tabContainer);
     splitter->addWidget(mapPanel);
 
     splitter->setSizes({200, 800});

@@ -8,7 +8,6 @@
 #include <QFont>
 #include <QPalette>
 #include <QPushButton>
-#include <QTimer>
 #include <QVBoxLayout>
 #include <cmath>
 
@@ -18,8 +17,8 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     layout->setContentsMargins(9, 27, 13, 0);
     setLayout(layout);
 
-    setStyleSheet("font-family: 'Roboto';");
     setAutoFillBackground(true);
+    setStyleSheet("font-family: 'Roboto'; background-color: #ffffff;");
 
     auto header = new QWidget(this);
     auto headerLayout = new QHBoxLayout(header);
@@ -53,6 +52,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     auto zoomInfo = new InfoItem(
         InfoValue{.key = "Zoom Level", .value = QString::number(m_mapPanel->zoom())}, InfoItem::InfoItemSize::Medium, this);
     connect(m_mapPanel, &MapPanel::zoomChanged, this, [zoomInfo](int oldZoom, int zoom) {
+        Q_UNUSED(oldZoom);
         zoomInfo->setValue(QString::number(zoom));
     });
     layout->addWidget(zoomInfo);
@@ -110,8 +110,6 @@ SideBar::~SideBar() {}
 void SideBar::setupSheet()
 {
     auto centralWidget = this->window()->findChild<QWidget *>("centralWidget");
-    auto mapPanel = this->window()->findChild<MapPanel *>();
-
     // setup the sheet's content
     m_sheetContent = new QWidget(centralWidget);
     m_sheetContent->setStyleSheet("background-color: #ffffff; font-family: 'Roboto';");

@@ -3,9 +3,9 @@
 #include "raiiguard.h"
 
 DataFetcher::DataFetcher(const QString &m_info, QObject *parent)
-    : QObject(parent), m_info(m_info), manager(new QNetworkAccessManager(this))
+    : QObject(parent), m_manager(new QNetworkAccessManager(this)), m_info(m_info)
 {
-    connect(manager, &QNetworkAccessManager::finished, this, &DataFetcher::handleNetworkResponse);
+    connect(m_manager, &QNetworkAccessManager::finished, this, &DataFetcher::handleNetworkResponse);
 }
 
 DataFetcher::~DataFetcher() {}
@@ -33,11 +33,11 @@ void DataFetcher::fetch(const FetchOptions &options)
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
 
     if (options.method == "POST" || options.method == "PATCH") {
-        manager->post(request, options.data.value_or(QByteArray()));
+        m_manager->post(request, options.data.value_or(QByteArray()));
     } else if (options.method == "PUT") {
-        manager->put(request, options.data.value_or(QByteArray()));
+        m_manager->put(request, options.data.value_or(QByteArray()));
     } else {
-        manager->get(request);
+        m_manager->get(request);
     }
 }
 

@@ -152,6 +152,7 @@ void MapPanel::mouseMoveEvent(QMouseEvent *event)
 
 void MapPanel::mouseReleaseEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event);
     if (m_selectionStart.has_value() && m_selectionEnd.has_value()) {
         zoomToRectangle(m_selectionStart.value(), m_selectionEnd.value());
         m_selectionStart.reset();
@@ -162,7 +163,7 @@ void MapPanel::mouseReleaseEvent(QMouseEvent *event)
     setCursor(Qt::ArrowCursor);
 }
 
-void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) {}
+void MapPanel::mouseDoubleClickEvent(QMouseEvent *event) { Q_UNUSED(event); }
 
 void MapPanel::zoomToRectangle(const QPoint &p1, const QPoint &p2)
 {
@@ -257,8 +258,6 @@ void MapPanel::paintEvent(QPaintEvent *event)
 
 void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
 {
-    bool DRAW_OUT_OF_BOUNDS = false;
-
     int xTileCount = 1 << m_zoom;
     int yTileCount = 1 << m_zoom;
     bool tileInBounds = x >= 0 && x < xTileCount && y >= 0 && y < yTileCount;

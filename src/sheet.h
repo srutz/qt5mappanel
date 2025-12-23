@@ -17,6 +17,7 @@ class Sheet : public QWidget
   public:
     enum Side { Left, Right };
 
+  private:
     int m_width = 400;                     // width in pixels
     int m_showDurationMs = 250;            // default show duration in milliseconds
     int m_hideDurationMs = 250;            // default hide duration in milliseconds
@@ -79,7 +80,7 @@ class SheetAnimatedWidget : public QWidget
     // animated
     void setPositionA(const QPoint position, int durationMs = 350, std::function<void()> onFinished = nullptr)
     {
-        if (positionAnimation) {
+        if (positionAnimation != nullptr) {
             positionAnimation->stop();
             delete positionAnimation;
         }
@@ -145,8 +146,8 @@ class SheetAnimatedWidget : public QWidget
     }
 
   signals:
-    void positionChanged(const QPoint point);
-    void backgroundColorChanged(const QColor color);
+    void positionChanged(QPoint point);
+    void backgroundColorChanged(QColor color);
     void mouseClicked(QMouseEvent *event);
 
   private:

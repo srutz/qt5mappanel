@@ -90,5 +90,5 @@ void Util::applyLabelStyle(QLabel *label, int fontSize)
                              "    color: #555555;"
                              "    font-size: %1px;"
                              "}")
-                             .arg(fontSize));
+                             .arg(fontSize - 1));
 }
