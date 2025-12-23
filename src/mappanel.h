@@ -31,8 +31,8 @@ class MapPanel : public QWidget
     void zoomToRectangle(const QPoint &p1, const QPoint &p2);
 
   public:
-    MapPanel(const TileServer &server, QWidget *parent = nullptr);
-    ~MapPanel();
+    MapPanel(TileServer server, QWidget *parent = nullptr);
+    ~MapPanel() = default;
 
     const TileServer &tileServer() const;
     void setTileServer(const TileServer &server);

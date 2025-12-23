@@ -4,10 +4,11 @@
 #include <QPainter>
 #include <QWheelEvent>
 #include <cmath>
+#include <utility>
 
 using namespace std;
 
-MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent), m_tileServer(server)
+MapPanel::MapPanel(TileServer server, QWidget *parent) : QWidget(parent), m_tileServer(std::move(server))
 {
     this->setContentsMargins(0, 0, 0, 0);
     // Enable double buffering to reduce flicker
@@ -15,8 +16,6 @@ MapPanel::MapPanel(const TileServer &server, QWidget *parent) : QWidget(parent),
     setAttribute(Qt::WA_NoSystemBackground);
     setMouseTracking(true);
 }
-
-MapPanel::~MapPanel() {}
 
 const TileServer &MapPanel::tileServer() const { return m_tileServer; }
 

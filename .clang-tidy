@@ -1,0 +1,15 @@
+---
+Checks: '-*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -bugprone-implicit-widening-of-multiplication-result'
+WarningsAsErrors: ''
+HeaderFilterRegex: '^.*/src/.*'
+FormatStyle: file
+ExtraArgs:
+  - '-stdlib=libstdc++'
