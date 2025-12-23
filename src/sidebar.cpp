@@ -18,7 +18,7 @@ SideBar::SideBar(MapPanel *mapPanel, QWidget *parent) : QWidget(parent), m_mapPa
     setLayout(layout);
 
     setAutoFillBackground(true);
-    setStyleSheet("font-family: 'Roboto'; background-color: #ffffff;");
+    setStyleSheet("font-family: 'Roboto'; QWidget { background-color: #ffffff; }");
 
     auto header = new QWidget(this);
     auto headerLayout = new QHBoxLayout(header);
