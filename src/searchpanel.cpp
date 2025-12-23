@@ -20,7 +20,7 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     setLayout(layout);
 
     setAutoFillBackground(true);
-    setStyleSheet("font-family: 'Roboto'; background-color: #ffffff;");
+    setStyleSheet("SearchPanel { font-family: 'Roboto'; background-color: #ffffff; }");
 
     auto header = new QWidget(this);
     auto headerLayout = new QHBoxLayout(header);
@@ -49,7 +49,7 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     Util::applyFlatButtonStyle(searchButton);
     connect(searchButton, &QPushButton::clicked, this, [this, searchEdit] {
         auto encodedQuery = QString::fromUtf8(QUrl::toPercentEncoding(searchEdit->text().trimmed()));
-        auto url = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=25").arg(encodedQuery);
+        auto url = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=1000").arg(encodedQuery);
         auto fetcher = new DataFetcher("nominatim search", this);
         DataFetcher::FetchOptions options{.url = url};
         connect(fetcher, &DataFetcher::responseReceived, this, [this, fetcher](const QByteArray &data) {
