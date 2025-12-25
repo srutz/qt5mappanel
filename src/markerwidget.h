@@ -3,6 +3,7 @@
 #define MARKERWIDGET_H
 
 #include "nominatim.h"
+#include <QVector>
 #include <QWidget>
 
 class MarkerWidget : public QWidget
@@ -10,16 +11,17 @@ class MarkerWidget : public QWidget
     Q_OBJECT
 
   public:
-    MarkerWidget(const NominatimResult &result, QWidget *parent);
+    MarkerWidget(const QVector<NominatimResult> &results, QWidget *parent);
     ~MarkerWidget() = default;
 
-    const NominatimResult &result() const { return m_result; }
+    const QVector<NominatimResult> &results() const { return m_results; }
+    int count() const { return m_results.size(); }
 
   protected:
     bool event(QEvent *event) override;
 
   private:
-    NominatimResult m_result;
+    QVector<NominatimResult> m_results;
 };
 
 #endif // MARKERWIDGET_H

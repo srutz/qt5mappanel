@@ -343,7 +343,8 @@ void MapPanel::updateMarkerPositions()
 {
     for (auto it = m_markerWidgets.begin(); it != m_markerWidgets.end(); ++it) {
         MarkerWidget *markerWidget = it.value();
-        const NominatimResult &result = markerWidget->result();
+        // Use the first result for positioning (primary location)
+        const NominatimResult &result = markerWidget->results().first();
 
         // Convert lat/lon to map position
         QPoint markerPos = MapUtil::latLonToPosition(result.lat, result.lon, m_zoom);
@@ -372,7 +373,8 @@ void MapPanel::recreateMarkerWidgets()
     // Create new marker widgets for each marker
     for (const NominatimResult &marker : m_markers) {
         QString key = QString::number(marker.place_id);
-        MarkerWidget *markerWidget = new MarkerWidget(marker, m_overlayWidget);
+        QVector<NominatimResult> results = {marker};
+        MarkerWidget *markerWidget = new MarkerWidget(results, m_overlayWidget);
         markerWidget->adjustSize();
         markerWidget->show();
         m_markerWidgets[key] = markerWidget;
