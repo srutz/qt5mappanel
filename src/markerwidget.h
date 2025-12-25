@@ -15,6 +15,9 @@ class MarkerWidget : public QWidget
 
     const NominatimResult &result() const { return m_result; }
 
+  protected:
+    bool event(QEvent *event) override;
+
   private:
     NominatimResult m_result;
 };

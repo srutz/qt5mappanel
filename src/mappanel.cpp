@@ -20,7 +20,6 @@ MapPanel::MapPanel(TileServer server, QWidget *parent) : QWidget(parent), m_tile
 
     // Create overlay widget for markers
     m_overlayWidget = new QWidget(this);
-    m_overlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
     m_overlayWidget->setGeometry(0, 0, width(), height());
     m_overlayWidget->show();
 }
