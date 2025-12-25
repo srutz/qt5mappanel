@@ -4,10 +4,12 @@
 #include "maputil.h"
 #include "util.h"
 
+#include <QApplication>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QStandardItemModel>
 #include <QTimer>
 #include <QUrl>
@@ -47,19 +49,31 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     layout->addWidget(searchEdit, 1);
     auto searchButton = new QPushButton("Search", this);
     Util::applyFlatButtonStyle(searchButton);
-    connect(searchButton, &QPushButton::clicked, this, [this, searchEdit] {
+    connect(searchButton, &QPushButton::clicked, this, [this, searchEdit, searchButton] {
+        // Disable button and set wait cursor
+        searchButton->setEnabled(false);
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+
         auto encodedQuery = QString::fromUtf8(QUrl::toPercentEncoding(searchEdit->text().trimmed()));
         auto url = QString("https://nominatim.openstreetmap.org/search?q=%1&format=json&limit=1000").arg(encodedQuery);
         auto fetcher = new DataFetcher("nominatim search", this);
         DataFetcher::FetchOptions options{.url = url};
-        connect(fetcher, &DataFetcher::responseReceived, this, [this, fetcher](const QByteArray &data) {
+        connect(fetcher, &DataFetcher::responseReceived, this, [this, fetcher, searchButton](const QByteArray &data) {
             QString s = QString::fromUtf8(data);
             auto results = NominatimResult::fromJsonString(s);
             applyResults(results);
+
+            // Re-enable button and restore cursor
+            searchButton->setEnabled(true);
+            QApplication::restoreOverrideCursor();
             fetcher->deleteLater();
         });
-        connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
+        connect(fetcher, &DataFetcher::error, this, [fetcher, searchButton](const QString &message) {
             qDebug() << "Error fetching search results:" << message;
+
+            // Re-enable button and restore cursor
+            searchButton->setEnabled(true);
+            QApplication::restoreOverrideCursor();
             fetcher->deleteLater();
         });
         fetcher->fetch(options);
@@ -92,6 +106,12 @@ SearchPanel::~SearchPanel() {}
 void SearchPanel::applyResults(const QVector<NominatimResult> &results)
 {
     m_mapPanel->setMarkers(results);
+
+    // Zoom to fit all results with padding
+    if (!results.isEmpty()) {
+        m_mapPanel->zoomToFitMarkers(0.15);
+    }
+
     // set the results in the table view
     // for simplicity, we will just show the display_name in a single column
     auto model = new QStandardItemModel(results.size(), 1, this);

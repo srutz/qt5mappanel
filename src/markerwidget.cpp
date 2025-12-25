@@ -65,10 +65,7 @@ MarkerWidget::MarkerWidget(const QVector<NominatimResult> &results, QWidget *par
 
             tooltipText +=
                 QString("<br>&nbsp;&nbsp;<b>Coords:</b> %1, %2<br>").arg(result.lat, 0, 'f', 6).arg(result.lon, 0, 'f', 6);
-            tooltipText += QString("&nbsp;&nbsp;<b>OSM:</b> %1 #%2 | <b>Place ID:</b> %3")
-                               .arg(result.osm_type)
-                               .arg(result.osm_id)
-                               .arg(result.place_id);
+            tooltipText += QString("&nbsp;&nbsp;<b>OSM:</b> %1 #%2").arg(result.osm_type).arg(result.osm_id);
 
             if (i < m_results.size() - 1) {
                 tooltipText += "<br>";

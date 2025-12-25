@@ -61,6 +61,7 @@ class MapPanel : public QWidget
     int zoom() const;
     void setZoom(int zoom, bool keepCenter = false);
     void zoomInOut(QPoint pivot, int delta);
+    void zoomToFitMarkers(double paddingFactor = 0.1);
 
     bool debug() const;
     void setDebug(bool debug);

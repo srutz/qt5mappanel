@@ -92,6 +92,7 @@ void MapPanel::setZoom(int zoom, bool keepCenter)
         m_mapPosition = newCenter - QPoint(this->width() / 2, this->height() / 2);
     }
     this->m_zoom = min(m_tileServer.maxZoom, zoom);
+    recreateMarkerWidgets();
     updateMarkerPositions();
     emit zoomChanged(oldZoom, this->m_zoom);
 }
@@ -114,6 +115,66 @@ void MapPanel::zoomInOut(QPoint pivot, int delta)
     } else if (delta < 0) {
         setMapPosition(QPoint((p.x() - dx) / 2, (p.y() - dy) / 2));
     }
+}
+
+void MapPanel::zoomToFitMarkers(double paddingFactor)
+{
+    if (m_markers.isEmpty()) {
+        return;
+    }
+
+    // Find bounds of all markers at max zoom level for precise calculation
+    int maxZoom = m_tileServer.maxZoom;
+    double minLat = m_markers[0].lat;
+    double maxLat = m_markers[0].lat;
+    double minLon = m_markers[0].lon;
+    double maxLon = m_markers[0].lon;
+
+    for (const auto &marker : m_markers) {
+        minLat = qMin(minLat, marker.lat);
+        maxLat = qMax(maxLat, marker.lat);
+        minLon = qMin(minLon, marker.lon);
+        maxLon = qMax(maxLon, marker.lon);
+    }
+
+    // Convert bounds to positions at max zoom
+    QPoint topLeft = MapUtil::latLonToPosition(maxLat, minLon, maxZoom);
+    QPoint bottomRight = MapUtil::latLonToPosition(minLat, maxLon, maxZoom);
+
+    int boundsWidth = bottomRight.x() - topLeft.x();
+    int boundsHeight = bottomRight.y() - topLeft.y();
+
+    // Add padding
+    int paddingX = static_cast<int>(boundsWidth * paddingFactor);
+    int paddingY = static_cast<int>(boundsHeight * paddingFactor);
+    boundsWidth += 2 * paddingX;
+    boundsHeight += 2 * paddingY;
+
+    // Find zoom level that fits the bounds in the viewport
+    int viewWidth = width();
+    int viewHeight = height();
+    int targetZoom = maxZoom;
+
+    // Start from max zoom and zoom out until bounds fit
+    for (int z = maxZoom; z >= 1; z--) {
+        double scale = pow(2.0, z - maxZoom);
+        int scaledWidth = static_cast<int>(boundsWidth * scale);
+        int scaledHeight = static_cast<int>(boundsHeight * scale);
+
+        if (scaledWidth <= viewWidth && scaledHeight <= viewHeight) {
+            targetZoom = z;
+            break;
+        }
+    }
+
+    // Calculate center point
+    double centerLat = (minLat + maxLat) / 2.0;
+    double centerLon = (minLon + maxLon) / 2.0;
+    QPoint centerPos = MapUtil::latLonToPosition(centerLat, centerLon, targetZoom);
+
+    // Apply zoom and center
+    setZoom(targetZoom, false);
+    setMapPositionCentered(centerPos);
 }
 
 bool MapPanel::debug() const { return m_Debug; }
@@ -333,7 +394,7 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
 void MapPanel::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    if (m_overlayWidget) {
+    if (m_overlayWidget != nullptr) {
         m_overlayWidget->setGeometry(0, 0, width(), height());
         updateMarkerPositions();
     }
@@ -342,23 +403,16 @@ void MapPanel::resizeEvent(QResizeEvent *event)
 void MapPanel::updateMarkerPositions()
 {
     for (auto it = m_markerWidgets.begin(); it != m_markerWidgets.end(); ++it) {
-        MarkerWidget *markerWidget = it.value();
-        // Use the first result for positioning (primary location)
-        const NominatimResult &result = markerWidget->results().first();
-
-        // Convert lat/lon to map position
-        QPoint markerPos = MapUtil::latLonToPosition(result.lat, result.lon, m_zoom);
-
-        // Convert to screen coordinates
-        QPoint screenPos = markerPos - m_mapPosition;
-
-        // Position the marker widget (centered at the marker position)
-        int markerWidth = markerWidget->width();
-        int markerHeight = markerWidget->height();
+        auto *markerWidget = it.value();
+        // first result for positioning (primary location)
+        const auto &result = markerWidget->results().first();
+        auto markerPos = MapUtil::latLonToPosition(result.lat, result.lon, m_zoom);
+        auto screenPos = markerPos - m_mapPosition;
+        auto markerWidth = markerWidget->width();
+        auto markerHeight = markerWidget->height();
         markerWidget->move(screenPos.x() - markerWidth / 2, screenPos.y() - markerHeight);
-
-        // Show/hide based on whether it's visible in the viewport
-        bool visible = screenPos.x() >= -markerWidth && screenPos.x() <= width() + markerWidth &&
+        // viewport check
+        auto visible = screenPos.x() >= -markerWidth && screenPos.x() <= width() + markerWidth &&
                        screenPos.y() >= -markerHeight && screenPos.y() <= height();
         markerWidget->setVisible(visible);
     }
@@ -366,14 +420,10 @@ void MapPanel::updateMarkerPositions()
 
 QVector<QVector<NominatimResult>> MapPanel::clusterMarkers() const
 {
-    // Clustering distance in pixels based on zoom level
-    // Higher zoom = more detailed = smaller cluster radius
-    int clusterRadius = m_zoom >= 15 ? 30 : (m_zoom >= 10 ? 50 : 80);
-
+    auto clusterRadius = m_zoom >= 15 ? 30 : (m_zoom >= 10 ? 50 : 80);
     QVector<QVector<NominatimResult>> clusters;
     QVector<bool> assigned(m_markers.size(), false);
-
-    for (int i = 0; i < m_markers.size(); ++i) {
+    for (auto i = 0; i < m_markers.size(); ++i) {
         if (assigned[i])
             continue;
 
@@ -381,48 +431,38 @@ QVector<QVector<NominatimResult>> MapPanel::clusterMarkers() const
         cluster.append(m_markers[i]);
         assigned[i] = true;
 
-        QPoint pos1 = MapUtil::latLonToPosition(m_markers[i].lat, m_markers[i].lon, m_zoom);
+        auto pos1 = MapUtil::latLonToPosition(m_markers[i].lat, m_markers[i].lon, m_zoom);
 
         // Find nearby markers to add to this cluster
         for (int j = i + 1; j < m_markers.size(); ++j) {
-            if (assigned[j])
+            if (assigned[j]) {
                 continue;
-
-            QPoint pos2 = MapUtil::latLonToPosition(m_markers[j].lat, m_markers[j].lon, m_zoom);
-
-            // Calculate pixel distance
+            }
+            auto pos2 = MapUtil::latLonToPosition(m_markers[j].lat, m_markers[j].lon, m_zoom);
             int dx = pos2.x() - pos1.x();
             int dy = pos2.y() - pos1.y();
-            double distance = sqrt(dx * dx + dy * dy);
-
+            auto distance = sqrt(dx * dx + dy * dy);
             if (distance <= clusterRadius) {
                 cluster.append(m_markers[j]);
                 assigned[j] = true;
             }
         }
-
         clusters.append(cluster);
     }
-
     return clusters;
 }
 
 void MapPanel::recreateMarkerWidgets()
 {
-    // Clear existing marker widgets
     qDeleteAll(m_markerWidgets);
     m_markerWidgets.clear();
 
-    // Get clustered markers
     QVector<QVector<NominatimResult>> clusters = clusterMarkers();
-
-    // Create marker widget for each cluster
-    int clusterIndex = 0;
+    auto clusterIndex = 0;
     for (const QVector<NominatimResult> &cluster : clusters) {
-        // Use the first result's place_id for the key, or generate a unique key for clusters
-        QString key = cluster.size() == 1 ? QString::number(cluster.first().place_id) : QString("cluster_%1").arg(clusterIndex++);
+        auto key = cluster.size() == 1 ? QString::number(cluster.first().place_id) : QString("cluster_%1").arg(clusterIndex++);
 
-        MarkerWidget *markerWidget = new MarkerWidget(cluster, m_overlayWidget);
+        auto *markerWidget = new MarkerWidget(cluster, m_overlayWidget);
         markerWidget->adjustSize();
         markerWidget->show();
         m_markerWidgets[key] = markerWidget;
