@@ -7,24 +7,22 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
 
 MarkerWidget::MarkerWidget(const QVector<NominatimResult> &results, QWidget *parent) : QWidget(parent), m_results(results)
 {
-    auto *layout = new QHBoxLayout();
-    layout->setContentsMargins(8, 4, 8, 4);
-    setLayout(layout);
-
-    auto icon = new QLabel(this);
-    icon->setStyleSheet("font-family: 'Lucide'; color: #000000;");
-    Util::setLucideIcon(icon, QString::fromUtf8("\uea34"), 18);
-    layout->addWidget(icon, 0, Qt::AlignVCenter);
-
-    // Show count if multiple results
+    // For clusters, we'll draw custom graphics in paintEvent
+    // Set a fixed size for the marker
     if (m_results.size() > 1) {
-        auto countLabel = new QLabel(QString::number(m_results.size()), this);
-        countLabel->setStyleSheet("font-weight: bold; color: #d40000; font-size: 10px;");
-        layout->addWidget(countLabel, 0, Qt::AlignVCenter);
+        // Cluster marker size
+        setFixedSize(50, 50);
+    } else {
+        // Single marker size
+        setFixedSize(30, 30);
     }
+
+    setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_NoSystemBackground);
 
     // Build comprehensive tooltip for all results
     QString tooltipText;
@@ -101,4 +99,71 @@ bool MarkerWidget::event(QEvent *event)
     }
 
     return QWidget::event(event);
+}
+
+void MarkerWidget::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    if (m_results.size() > 1) {
+        // Draw cluster marker with 3 shaded circles
+        int centerX = width() / 2;
+        int centerY = height() / 2;
+
+        QColor color1(41, 128, 185);
+        QColor color2(52, 152, 219, 180);
+        QColor color3(133, 193, 233, 120);
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QBrush(color3));
+        painter.drawEllipse(QPointF(centerX, centerY), 22, 22);
+
+        painter.setBrush(QBrush(color2));
+        painter.drawEllipse(QPointF(centerX, centerY), 17, 17);
+
+        painter.setBrush(QBrush(color1));
+        painter.drawEllipse(QPointF(centerX, centerY), 12, 12);
+
+        painter.setPen(Qt::white);
+        QFont font = painter.font();
+        font.setPixelSize(12);
+        font.setBold(true);
+        painter.setFont(font);
+
+        QString countText = QString::number(m_results.size());
+        QFontMetrics fm(font);
+        int textWidth = fm.horizontalAdvance(countText);
+        int textHeight = fm.height();
+        painter.drawText(centerX - textWidth / 2, centerY + textHeight / 4, countText);
+
+    } else {
+        // Draw single marker - simple pin shape
+        int centerX = width() / 2;
+        int pinBottom = height() - 2;
+        int pinTop = 8;
+
+        // Create pin path
+        QPainterPath path;
+        path.addEllipse(QPointF(centerX, pinTop + 6), 8, 8);
+
+        // Add pin point
+        QPainterPath triangle;
+        triangle.moveTo(centerX, pinBottom);
+        triangle.lineTo(centerX - 4, pinTop + 12);
+        triangle.lineTo(centerX + 4, pinTop + 12);
+        triangle.closeSubpath();
+        path.addPath(triangle);
+
+        // Draw pin with shadow
+        painter.setPen(QPen(QColor(100, 100, 100, 100), 1));
+        painter.setBrush(QBrush(QColor(220, 53, 69)));
+        painter.drawPath(path);
+
+        // Draw inner circle
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QBrush(Qt::white));
+        painter.drawEllipse(QPointF(centerX, pinTop + 6), 4, 4);
+    }
 }

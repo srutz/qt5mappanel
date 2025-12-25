@@ -364,17 +364,65 @@ void MapPanel::updateMarkerPositions()
     }
 }
 
+QVector<QVector<NominatimResult>> MapPanel::clusterMarkers() const
+{
+    // Clustering distance in pixels based on zoom level
+    // Higher zoom = more detailed = smaller cluster radius
+    int clusterRadius = m_zoom >= 15 ? 30 : (m_zoom >= 10 ? 50 : 80);
+
+    QVector<QVector<NominatimResult>> clusters;
+    QVector<bool> assigned(m_markers.size(), false);
+
+    for (int i = 0; i < m_markers.size(); ++i) {
+        if (assigned[i])
+            continue;
+
+        QVector<NominatimResult> cluster;
+        cluster.append(m_markers[i]);
+        assigned[i] = true;
+
+        QPoint pos1 = MapUtil::latLonToPosition(m_markers[i].lat, m_markers[i].lon, m_zoom);
+
+        // Find nearby markers to add to this cluster
+        for (int j = i + 1; j < m_markers.size(); ++j) {
+            if (assigned[j])
+                continue;
+
+            QPoint pos2 = MapUtil::latLonToPosition(m_markers[j].lat, m_markers[j].lon, m_zoom);
+
+            // Calculate pixel distance
+            int dx = pos2.x() - pos1.x();
+            int dy = pos2.y() - pos1.y();
+            double distance = sqrt(dx * dx + dy * dy);
+
+            if (distance <= clusterRadius) {
+                cluster.append(m_markers[j]);
+                assigned[j] = true;
+            }
+        }
+
+        clusters.append(cluster);
+    }
+
+    return clusters;
+}
+
 void MapPanel::recreateMarkerWidgets()
 {
     // Clear existing marker widgets
     qDeleteAll(m_markerWidgets);
     m_markerWidgets.clear();
 
-    // Create new marker widgets for each marker
-    for (const NominatimResult &marker : m_markers) {
-        QString key = QString::number(marker.place_id);
-        QVector<NominatimResult> results = {marker};
-        MarkerWidget *markerWidget = new MarkerWidget(results, m_overlayWidget);
+    // Get clustered markers
+    QVector<QVector<NominatimResult>> clusters = clusterMarkers();
+
+    // Create marker widget for each cluster
+    int clusterIndex = 0;
+    for (const QVector<NominatimResult> &cluster : clusters) {
+        // Use the first result's place_id for the key, or generate a unique key for clusters
+        QString key = cluster.size() == 1 ? QString::number(cluster.first().place_id) : QString("cluster_%1").arg(clusterIndex++);
+
+        MarkerWidget *markerWidget = new MarkerWidget(cluster, m_overlayWidget);
         markerWidget->adjustSize();
         markerWidget->show();
         m_markerWidgets[key] = markerWidget;

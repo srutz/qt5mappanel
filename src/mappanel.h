@@ -39,6 +39,7 @@ class MapPanel : public QWidget
     void updateMarkerPositions();
     void recreateMarkerWidgets();
     void zoomToRectangle(const QPoint &p1, const QPoint &p2);
+    QVector<QVector<NominatimResult>> clusterMarkers() const;
 
   public:
     MapPanel(TileServer server, QWidget *parent = nullptr);

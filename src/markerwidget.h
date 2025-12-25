@@ -19,6 +19,7 @@ class MarkerWidget : public QWidget
 
   protected:
     bool event(QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
   private:
     QVector<NominatimResult> m_results;
