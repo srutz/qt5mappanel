@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wunused)
 
-
 find_package(Qt5 REQUIRED COMPONENTS Widgets Network)
 
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
