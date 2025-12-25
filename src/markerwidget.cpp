@@ -1,9 +1,9 @@
 
-#include "marker.h"
+#include "markerwidget.h"
 #include <QLabel>
 #include <QVBoxLayout>
 
-Marker::Marker(const NominatimResult &result, QObject *parent) : QObject(parent), m_result(result)
+MarkerWidget::MarkerWidget(const NominatimResult &result, QWidget *parent) : QWidget(parent), m_result(result)
 {
     auto display = m_result.display_name;
     auto *layout = new QVBoxLayout();
