@@ -28,6 +28,7 @@ NominatimResult NominatimResult::fromJson(const QJsonObject &json)
         result.boundingbox.lonMin = bbox[2].toString().toDouble();
         result.boundingbox.lonMax = bbox[3].toString().toDouble();
     }
+    qDebug() << "result" << result.display_name;
     return result;
 }
 

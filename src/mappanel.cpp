@@ -29,6 +29,14 @@ void MapPanel::setTileServer(const TileServer &server)
     update();
 }
 
+QVector<NominatimResult> MapPanel::markers() const { return m_markers; }
+
+void MapPanel::setMarkers(const QVector<NominatimResult> &markers)
+{
+    m_markers = markers;
+    update();
+}
+
 const QPoint &MapPanel::mousePosition() const { return m_mousePosition; }
 
 void MapPanel::setMousePosition(const QPoint &position)

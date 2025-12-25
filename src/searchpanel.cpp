@@ -55,7 +55,7 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
         connect(fetcher, &DataFetcher::responseReceived, this, [this, fetcher](const QByteArray &data) {
             QString s = QString::fromUtf8(data);
             auto results = NominatimResult::fromJsonString(s);
-            setResults(results);
+            applyResults(results);
             fetcher->deleteLater();
         });
         connect(fetcher, &DataFetcher::error, this, [fetcher](const QString &message) {
@@ -89,11 +89,9 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
 
 SearchPanel::~SearchPanel() {}
 
-QVector<NominatimResult> SearchPanel::results() const { return m_results; }
-
-void SearchPanel::setResults(const QVector<NominatimResult> &results)
+void SearchPanel::applyResults(const QVector<NominatimResult> &results)
 {
-    m_results = results;
+    m_mapPanel->setMarkers(results);
     // set the results in the table view
     // for simplicity, we will just show the display_name in a single column
     auto model = new QStandardItemModel(results.size(), 1, this);
@@ -108,8 +106,9 @@ void SearchPanel::setResults(const QVector<NominatimResult> &results)
     connect(
         m_resultsTable->selectionModel(), &QItemSelectionModel::currentChanged, this,
         [this](const QModelIndex &current, const QModelIndex &) {
-            if (current.isValid() && current.row() < m_results.size()) {
-                const auto &result = m_results[current.row()];
+            const auto &results = m_mapPanel->markers();
+            if (current.isValid() && current.row() < results.size()) {
+                const auto &result = results[current.row()];
                 auto pos = MapUtil::latLonToPosition(result.lat, result.lon, m_mapPanel->zoom());
                 m_mapPanel->setMapPositionCentered(pos);
             }

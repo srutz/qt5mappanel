@@ -2,9 +2,11 @@
 #define MAPPANEL_H
 
 #include "constants.h"
+#include "nominatim.h"
 #include "tilecache.h"
 #include <QPoint>
 #include <QString>
+#include <QVector>
 #include <QWidget>
 #include <optional>
 
@@ -26,6 +28,7 @@ class MapPanel : public QWidget
     optional<QPoint> m_downCoords;
     optional<QPoint> m_selectionStart;
     optional<QPoint> m_selectionEnd;
+    QVector<NominatimResult> m_markers;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
     void zoomToRectangle(const QPoint &p1, const QPoint &p2);
@@ -36,6 +39,9 @@ class MapPanel : public QWidget
 
     const TileServer &tileServer() const;
     void setTileServer(const TileServer &server);
+
+    QVector<NominatimResult> markers() const;
+    void setMarkers(const QVector<NominatimResult> &markers);
 
     const QPoint &mousePosition() const;
     void setMousePosition(const QPoint &position);
