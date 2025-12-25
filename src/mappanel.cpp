@@ -1,6 +1,8 @@
 
 #include "mappanel.h"
 #include "datafetcher.h"
+#include "maputil.h"
+#include "markerwidget.h"
 #include <QPainter>
 #include <QWheelEvent>
 #include <cmath>
@@ -15,6 +17,12 @@ MapPanel::MapPanel(TileServer server, QWidget *parent) : QWidget(parent), m_tile
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     setMouseTracking(true);
+
+    // Create overlay widget for markers
+    m_overlayWidget = new QWidget(this);
+    m_overlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_overlayWidget->setGeometry(0, 0, width(), height());
+    m_overlayWidget->show();
 }
 
 const TileServer &MapPanel::tileServer() const { return m_tileServer; }
@@ -34,6 +42,8 @@ QVector<NominatimResult> MapPanel::markers() const { return m_markers; }
 void MapPanel::setMarkers(const QVector<NominatimResult> &markers)
 {
     m_markers = markers;
+    recreateMarkerWidgets();
+    updateMarkerPositions();
     update();
 }
 
@@ -57,6 +67,7 @@ void MapPanel::setMapPosition(QPoint p)
     }
     m_mapPosition = p;
     emit mapPositionChanged(p);
+    updateMarkerPositions();
     update();
 }
 
@@ -82,6 +93,7 @@ void MapPanel::setZoom(int zoom, bool keepCenter)
         m_mapPosition = newCenter - QPoint(this->width() / 2, this->height() / 2);
     }
     this->m_zoom = min(m_tileServer.maxZoom, zoom);
+    updateMarkerPositions();
     emit zoomChanged(oldZoom, this->m_zoom);
 }
 
@@ -316,5 +328,54 @@ void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
             painter.setPen(Qt::white);
             painter.drawText(dx + 4 + 8, dy + 4 + 12, s);
         }
+    }
+}
+
+void MapPanel::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    if (m_overlayWidget) {
+        m_overlayWidget->setGeometry(0, 0, width(), height());
+        updateMarkerPositions();
+    }
+}
+
+void MapPanel::updateMarkerPositions()
+{
+    for (auto it = m_markerWidgets.begin(); it != m_markerWidgets.end(); ++it) {
+        MarkerWidget *markerWidget = it.value();
+        const NominatimResult &result = markerWidget->result();
+
+        // Convert lat/lon to map position
+        QPoint markerPos = MapUtil::latLonToPosition(result.lat, result.lon, m_zoom);
+
+        // Convert to screen coordinates
+        QPoint screenPos = markerPos - m_mapPosition;
+
+        // Position the marker widget (centered at the marker position)
+        int markerWidth = markerWidget->width();
+        int markerHeight = markerWidget->height();
+        markerWidget->move(screenPos.x() - markerWidth / 2, screenPos.y() - markerHeight);
+
+        // Show/hide based on whether it's visible in the viewport
+        bool visible = screenPos.x() >= -markerWidth && screenPos.x() <= width() + markerWidth &&
+                       screenPos.y() >= -markerHeight && screenPos.y() <= height();
+        markerWidget->setVisible(visible);
+    }
+}
+
+void MapPanel::recreateMarkerWidgets()
+{
+    // Clear existing marker widgets
+    qDeleteAll(m_markerWidgets);
+    m_markerWidgets.clear();
+
+    // Create new marker widgets for each marker
+    for (const NominatimResult &marker : m_markers) {
+        QString key = QString::number(marker.place_id);
+        MarkerWidget *markerWidget = new MarkerWidget(marker, m_overlayWidget);
+        markerWidget->adjustSize();
+        markerWidget->show();
+        m_markerWidgets[key] = markerWidget;
     }
 }

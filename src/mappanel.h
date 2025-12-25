@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "nominatim.h"
 #include "tilecache.h"
+#include <QHash>
 #include <QPoint>
 #include <QString>
 #include <QVector>
@@ -11,6 +12,8 @@
 #include <optional>
 
 using std::optional;
+
+class MarkerWidget;
 
 class MapPanel : public QWidget
 {
@@ -29,8 +32,12 @@ class MapPanel : public QWidget
     optional<QPoint> m_selectionStart;
     optional<QPoint> m_selectionEnd;
     QVector<NominatimResult> m_markers;
+    QWidget *m_overlayWidget;
+    QHash<QString, MarkerWidget *> m_markerWidgets;
 
     void paintTile(QPainter &painter, int dx, int dy, int x, int y);
+    void updateMarkerPositions();
+    void recreateMarkerWidgets();
     void zoomToRectangle(const QPoint &p1, const QPoint &p2);
 
   public:
@@ -62,6 +69,7 @@ class MapPanel : public QWidget
   protected:
     void paintEvent(QPaintEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
