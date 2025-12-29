@@ -31,3 +31,18 @@ MapUtil::Coordinate MapUtil::positionToLatLon(const QPoint &position, int zoom)
     double lat = toDeg(atan(sinh(M_PI - (2.0 * M_PI * position.y()) / ymax)));
     return Coordinate{.lat = lat, .lon = lon};
 }
+
+// Haversine formula to calculate distance between two lat/lon points in meters
+double MapUtil::distanceInMeters(double lat1, double lon1, double lat2, double lon2)
+{
+    const double EARTH_RADIUS = 6371000.0; // Earth's radius in meters
+
+    double dLat = toRad(lat2 - lat1);
+    double dLon = toRad(lon2 - lon1);
+
+    double a = sin(dLat / 2) * sin(dLat / 2) + cos(toRad(lat1)) * cos(toRad(lat2)) * sin(dLon / 2) * sin(dLon / 2);
+
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return EARTH_RADIUS * c;
+}

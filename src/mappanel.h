@@ -31,6 +31,8 @@ class MapPanel : public QWidget
     optional<QPoint> m_downCoords;
     optional<QPoint> m_selectionStart;
     optional<QPoint> m_selectionEnd;
+    optional<QPoint> m_circleStart;
+    optional<QPoint> m_circleCurrent;
     QVector<NominatimResult> m_markers;
     QWidget *m_overlayWidget;
     QHash<QString, MarkerWidget *> m_markerWidgets;
@@ -40,6 +42,7 @@ class MapPanel : public QWidget
     void recreateMarkerWidgets();
     void zoomToRectangle(const QPoint &p1, const QPoint &p2);
     QVector<QVector<NominatimResult>> clusterMarkers() const;
+    void paintMapScale(QPainter &painter);
 
   public:
     MapPanel(TileServer server, QWidget *parent = nullptr);

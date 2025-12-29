@@ -209,6 +209,10 @@ void MapPanel::mousePressEvent(QMouseEvent *event)
         m_selectionStart = event->pos();
         m_selectionEnd = event->pos();
         setCursor(Qt::CrossCursor);
+    } else if (event->modifiers() & Qt::ShiftModifier) {
+        m_circleStart = event->pos();
+        m_circleCurrent = event->pos();
+        setCursor(Qt::CrossCursor);
     } else {
         m_downCoords = event->pos();
         setCursor(Qt::ClosedHandCursor);
@@ -219,6 +223,9 @@ void MapPanel::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_selectionStart.has_value()) {
         m_selectionEnd = event->pos();
+        update();
+    } else if (m_circleStart.has_value()) {
+        m_circleCurrent = event->pos();
         update();
     } else if (m_downCoords.has_value()) {
         QPoint delta = event->pos() - m_downCoords.value();
@@ -236,6 +243,11 @@ void MapPanel::mouseReleaseEvent(QMouseEvent *event)
         zoomToRectangle(m_selectionStart.value(), m_selectionEnd.value());
         m_selectionStart.reset();
         m_selectionEnd.reset();
+        update();
+    }
+    if (m_circleStart.has_value()) {
+        m_circleStart.reset();
+        m_circleCurrent.reset();
         update();
     }
     m_downCoords.reset();
@@ -333,6 +345,62 @@ void MapPanel::paintEvent(QPaintEvent *event)
         painter.setBrush(QBrush(QColor(0, 120, 215, 50)));
         painter.drawRect(x, y, w, h);
     }
+
+    // Draw circle if shift-dragging
+    if (m_circleStart.has_value() && m_circleCurrent.has_value()) {
+        QPoint p1 = m_circleStart.value();
+        QPoint p2 = m_circleCurrent.value();
+
+        // Calculate radius in pixels
+        int dx = p2.x() - p1.x();
+        int dy = p2.y() - p1.y();
+        int radiusPixels = static_cast<int>(sqrt(dx * dx + dy * dy));
+
+        // Draw circle
+        painter.setPen(QPen(QColor(255, 100, 0), 2));
+        painter.setBrush(QBrush(QColor(255, 100, 0, 30)));
+        painter.drawEllipse(p1, radiusPixels, radiusPixels);
+
+        // Calculate real-world distance
+        QPoint mapPoint1 = m_mapPosition + p1;
+        QPoint mapPoint2 = m_mapPosition + p2;
+        auto coord1 = MapUtil::positionToLatLon(mapPoint1, m_zoom);
+        auto coord2 = MapUtil::positionToLatLon(mapPoint2, m_zoom);
+        double distanceMeters = MapUtil::distanceInMeters(coord1.lat, coord1.lon, coord2.lat, coord2.lon);
+
+        // Format distance string
+        QString distanceStr;
+        if (distanceMeters < 1000) {
+            distanceStr = QString("%1 m").arg(static_cast<int>(distanceMeters));
+        } else {
+            distanceStr = QString("%1 km").arg(distanceMeters / 1000.0, 0, 'f', 2);
+        }
+
+        // Draw distance label
+        QFont font = painter.font();
+        font.setPointSize(12);
+        font.setBold(true);
+        painter.setFont(font);
+        QFontMetrics fm(font);
+        int textWidth = fm.horizontalAdvance(distanceStr);
+        int textHeight = fm.height();
+
+        // Position label near the cursor
+        int labelX = p2.x() + 15;
+        int labelY = p2.y() - 15;
+
+        // Draw background for label
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QBrush(QColor(0, 0, 0, 180)));
+        painter.drawRoundedRect(labelX - 5, labelY - textHeight + 5, textWidth + 10, textHeight, 5, 5);
+
+        // Draw text
+        painter.setPen(QColor(255, 255, 255));
+        painter.drawText(labelX, labelY, distanceStr);
+    }
+
+    // Draw map scale
+    paintMapScale(painter);
 }
 
 void MapPanel::paintTile(QPainter &painter, int dx, int dy, int x, int y)
@@ -467,4 +535,82 @@ void MapPanel::recreateMarkerWidgets()
         markerWidget->show();
         m_markerWidgets[key] = markerWidget;
     }
+}
+
+void MapPanel::paintMapScale(QPainter &painter)
+{
+    // Calculate meters per pixel at this zoom level (at equator)
+    // Earth's circumference at equator: 40,075,017 meters
+    // At zoom z, world width in pixels: 256 * 2^z
+    double metersPerPixel = 40075017.0 / (256.0 * (1 << m_zoom));
+
+    // Nice round numbers for scale bar
+    static const double scaleWidths[] = {1,    2,    5,     10,    20,    50,     100,    200,    500,    1000,
+                                         2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000};
+
+    // Find a nice round distance that results in 50-200 pixel bar
+    double targetDistance = 0;
+    int scaleWidth = 100;
+    for (double scale : scaleWidths) {
+        int pixels = static_cast<int>(scale / metersPerPixel);
+        if (pixels >= 50 && pixels <= 200) {
+            targetDistance = scale;
+            scaleWidth = pixels;
+            break;
+        }
+    }
+
+    // Format the distance string
+    QString scaleText;
+    if (targetDistance < 1000) {
+        scaleText = QString("%1 m").arg(static_cast<int>(targetDistance));
+    } else {
+        double km = targetDistance / 1000.0;
+        if (km < 10) {
+            scaleText = QString("%1 km").arg(km, 0, 'f', 1);
+        } else {
+            scaleText = QString("%1 km").arg(static_cast<int>(km));
+        }
+    }
+
+    // Position in top right corner
+    int padding = 15;
+    int barHeight = 8;
+    int x = width() - scaleWidth - padding;
+    int y = padding;
+
+    // Draw background
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QBrush(QColor(255, 255, 255, 200)));
+    painter.drawRoundedRect(x - 10, y - 5, scaleWidth + 20, barHeight + 30, 5, 5);
+
+    // Draw scale bar
+    painter.setPen(QPen(QColor(0, 0, 0), 2));
+    painter.setBrush(Qt::white);
+
+    // Draw main bar with alternating black/white sections
+    int segmentWidth = scaleWidth / 4;
+    for (int i = 0; i < 4; i++) {
+        if (i % 2 == 0) {
+            painter.setBrush(Qt::black);
+        } else {
+            painter.setBrush(Qt::white);
+        }
+        painter.drawRect(x + i * segmentWidth, y, segmentWidth, barHeight);
+    }
+
+    // Draw border around the whole bar
+    painter.setPen(QPen(QColor(0, 0, 0), 2));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRect(x, y, scaleWidth, barHeight);
+
+    // Draw text below the bar
+    QFont font = painter.font();
+    font.setPointSize(9);
+    font.setBold(true);
+    painter.setFont(font);
+    painter.setPen(QColor(0, 0, 0));
+    QFontMetrics fm(font);
+    int textWidth = fm.horizontalAdvance(scaleText);
+    painter.drawText(x + (scaleWidth - textWidth) / 2, y + barHeight + 15, scaleText);
 }

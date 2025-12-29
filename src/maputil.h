@@ -21,6 +21,7 @@ struct MapUtil {
     static int lat2position(double lat, int z);
     static QPoint latLonToPosition(double lat, double lon, int zoom);
     static Coordinate positionToLatLon(const QPoint &position, int zoom);
+    static double distanceInMeters(double lat1, double lon1, double lat2, double lon2);
 };
 
 #endif // MAPUTIL_H
