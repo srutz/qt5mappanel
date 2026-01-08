@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
+#include <optional>
 
 /*
  * Generic Data Fetcher for loading web resources

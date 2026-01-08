@@ -1,6 +1,20 @@
 
-my mac:
+# Qt5map Panel
 
+## qmake build
+
+```
+mkdir build
+cd build
+qmake ../qt5mappanel.pro
+```
+
+
+## Cmake
+
+
+#my mac:
+#
 cmake -B build -S . -DCMAKE_PREFIX_PATH=${HOME}}$/Qt/5.15.2/macos
 
 
