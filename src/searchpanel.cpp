@@ -22,7 +22,9 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
     setLayout(layout);
 
     setAutoFillBackground(true);
-    setStyleSheet("SearchPanel { font-family: 'Roboto'; background-color: #ffffff; }");
+    setStyleSheet(
+        "SearchPanel { font-family: 'Gravitas One'; background-color: #ffffff; }"
+        "QLabel { font-family: 'Gravitas One'; }");
 
     auto header = new QWidget(this);
     auto headerLayout = new QHBoxLayout(header);
@@ -40,6 +42,7 @@ SearchPanel::SearchPanel(MapPanel *mapPanel, QWidget *parent) : QWidget(parent),
         )");
     headerLabel->setWordWrap(true);
     headerLayout->addWidget(headerLabel, 1);
+    // headerLabel->setStyleSheet("font-family: 'Gravitas One'; ");
 
     layout->addWidget(header);
     layout->addSpacing(12);

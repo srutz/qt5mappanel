@@ -2,5 +2,6 @@
     <qresource prefix="/common">
         <file>resources/fonts/Roboto-Regular.ttf</file>
         <file>resources/fonts/Lucide.ttf</file>
+        <file>resources/fonts/GravitasOne-Regular.ttf</file>
     </qresource>
 </RCC>

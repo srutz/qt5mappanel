@@ -7,9 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    QString s1 = "frank";
-    QString s2 = s1;
-
     QApplication::setStyle(QStyleFactory::create("Fusion"));
     QApplication a(argc, argv);
     MainWindow w;

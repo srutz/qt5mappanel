@@ -19,11 +19,16 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    for (const auto &family : {":/common/resources/fonts/Lucide.ttf", ":/common/resources/fonts/Roboto-Regular.ttf"}) {
+    for (const auto &family :
+         {":/common/resources/fonts/Lucide.ttf", ":/common/resources/fonts/GravitasOne-Regular.ttf",
+          ":/common/resources/fonts/Roboto-Regular.ttf"}) {
         int fontId = QFontDatabase::addApplicationFont(family);
         if (fontId == -1) {
             qWarning() << "Failed to load font:" << family;
             exit(1);
+        }
+        for (auto f : QFontDatabase::applicationFontFamilies(fontId)) {
+            qDebug() << "Loaded application font family:" << f;
         }
     }
 
